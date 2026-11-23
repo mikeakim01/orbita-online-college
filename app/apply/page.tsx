@@ -1,29 +1,87 @@
-import AuthForm from '@/components/AuthForm';
-import { submitApplication } from '@/app/actions';
+import ApplyForm from '@/components/ApplyForm';
+import OrbitArt from '@/components/OrbitArt';
 import { site } from '@/lib/site';
+import './apply.css';
 
-export const metadata = { title: 'Apply' };
+export const metadata = { title: 'Apply', description: 'Apply to ' + site.name + ': steps, requirements and fees.' };
 
-export default function Apply() {
+const STEPS = [
+  ['Create an account', 'Register with your email and confirm it. It takes two minutes.'],
+  ['Send your application', 'Choose a program and level, and tell us why you want to study it.'],
+  ['Admissions review', 'An admissions officer reviews every application. You see the status on your dashboard.'],
+  ['Offer and enrolment', 'Approved applicants receive an offer letter with final fees and the enrolment steps.'],
+];
+
+const DOCS = [
+  'A valid passport or national ID',
+  'Your highest qualification certificate and transcript',
+  'For Master and PhD: your previous degree certificate',
+  'For PhD: a research proposal of one to two pages',
+  'Proof of English language ability, if English is not your first language',
+];
+
+export default function Apply({ searchParams }: { searchParams: { program?: string } }) {
   return (
-    <section className="section narrow">
-      <div className="container">
-        <h1>Start your application</h1>
-        <p className="lead">
-          Choose what you want to study. An admissions officer reviews every application. Application fee: {site.appFee}.
-        </p>
-        <div className="card">
-          <AuthForm
-            action={submitApplication}
-            submit="Send application"
-            fields={[
-              { name: 'program', label: 'Program', type: 'select', options: site.programs.map((p) => p.name) },
-              { name: 'level', label: 'Level', type: 'select', options: site.applyLevels },
-              { name: 'statement', label: 'Why do you want to study this? (optional)', type: 'textarea' },
-            ]}
-          />
+    <>
+      <section className="apply-hero">
+        <div className="container apply-hero-in">
+          <div>
+            <p className="eyebrow">ADMISSIONS · INTAKE {site.intake.toUpperCase()}</p>
+            <h1>Start your application</h1>
+            <p className="lead">
+              Pick your faculty and level, check what you need, and send your application in a few minutes. Application fee: {site.appFee}.
+            </p>
+          </div>
+          <OrbitArt />
         </div>
-      </div>
-    </section>
+      </section>
+
+      <section className="section">
+        <div className="container">
+          <ApplyForm initialProgram={searchParams.program} />
+        </div>
+      </section>
+
+      <section className="section bordered">
+        <div className="container">
+          <h2>How it works</h2>
+          <ol className="steps">
+            {STEPS.map(([t, d], i) => (
+              <li key={t}>
+                <span className="num" aria-hidden="true">{i + 1}</span>
+                <h3>{t}</h3>
+                <p className="muted">{d}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      <section className="section bordered">
+        <div className="container two">
+          <div>
+            <h2>What to have ready</h2>
+            <ul className="ticks">
+              {DOCS.map((d) => (
+                <li key={d}>{d}</li>
+              ))}
+            </ul>
+            <p className="muted">You do not upload documents now. We ask for them after your application is approved.</p>
+          </div>
+          <div>
+            <h2>Questions about applying</h2>
+            {site.faq.slice(0, 4).map((f) => (
+              <details key={f.q} className="qa">
+                <summary>{f.q}</summary>
+                <p>{f.a}</p>
+              </details>
+            ))}
+            <p>
+              Still unsure? Write to <a href={'mailto:' + site.email}>{site.email}</a>.
+            </p>
+          </div>
+        </div>
+      </section>
+    </>
   );
 }
