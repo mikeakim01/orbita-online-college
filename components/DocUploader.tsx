@@ -55,6 +55,7 @@ export default function DocUploader({ applicationId, userId, slots, docs, locked
               <p key={d.id} className="docfile">
                 <a href={'/documents/file/' + d.id} target="_blank" rel="noopener noreferrer">{d.file_name}</a>
                 <span className="muted small"> {prettySize(d.size_bytes)}</span>
+                {d.verified && <span className="badge approved">verified</span>}
                 {!locked && (
                   <button type="button" className="btn sm ghost" onClick={() => remove(d.id, s.key)} disabled={busy === s.key}>
                     Remove

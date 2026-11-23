@@ -79,6 +79,11 @@ export default async function Dashboard({ searchParams }: { searchParams: { appl
                               return miss.length ? miss.length + ' still needed' : 'Complete';
                             })()}{' '}
                             <Link href={'/documents/' + a.id}>{a.status === 'submitted' ? 'Upload' : 'View'}</Link>
+                            {a.docs_note && (
+                              <div className="notebox">
+                                <strong>Admissions:</strong> {a.docs_note}
+                              </div>
+                            )}
                           </>
                         ) : (
                           <span className="muted">None needed</span>

@@ -4,7 +4,7 @@ export const BUCKET = 'application-docs';
 export const MAX_BYTES = 5 * 1024 * 1024;
 export const ALLOWED_TYPES = ['application/pdf', 'image/jpeg', 'image/png'];
 export type DocSlot = { key: string; label: string; hint: string; required: boolean };
-export type DocRow = { id: string; doc_type: string; file_name: string; size_bytes: number; created_at: string };
+export type DocRow = { id: string; doc_type: string; file_name: string; size_bytes: number; created_at: string; verified?: boolean };
 
 export const slotsFor = (level: string): DocSlot[] => site.docRules?.[level] ?? [];
 

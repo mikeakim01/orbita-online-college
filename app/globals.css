@@ -99,4 +99,9 @@ details p{color:var(--muted);max-width:640px}
 .narrow-doc{max-width:760px}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .okmsg.warn{border-color:#d9a21e}
-.docbox{font-size:13px;display:grid;gap:4px}
+.docbox{font-size:13px;display:grid;gap:6px;min-width:220px}
+.docrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.docrow form{margin:0}
+.notefrm{display:grid;gap:6px;margin-top:4px}
+.notefrm textarea{width:100%;font:inherit;font-size:13px}
+.notebox{margin-top:6px;padding:8px 10px;border:1px solid #d9a21e;border-radius:8px;font-size:13px}

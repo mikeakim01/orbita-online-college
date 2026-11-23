@@ -14,11 +14,11 @@ export default async function Documents({ params, searchParams }: { params: { ap
   } = await supabase.auth.getUser();
   if (!user) redirect('/login?next=/documents/' + params.applicationId);
 
-  const { data: app } = await supabase.from('applications').select('id, program, level, status, user_id').eq('id', params.applicationId).maybeSingle();
+  const { data: app } = await supabase.from('applications').select('id, program, level, status, user_id, docs_note').eq('id', params.applicationId).maybeSingle();
   const slots = app ? slotsFor(app.level) : [];
   if (!app || app.user_id !== user.id || !slots.length) notFound();
 
-  const { data: docs } = await supabase.from('application_documents').select('id, doc_type, file_name, size_bytes, created_at').eq('application_id', app.id).order('created_at');
+  const { data: docs } = await supabase.from('application_documents').select('id, doc_type, file_name, size_bytes, created_at, verified').eq('application_id', app.id).order('created_at');
   const rows = (docs ?? []) as DocRow[];
   const missing = missingFor(app.level, rows.map((d) => d.doc_type));
   const locked = app.status !== 'submitted';
@@ -30,6 +30,11 @@ export default async function Documents({ params, searchParams }: { params: { ap
         <h1>Your documents</h1>
         <p className="lead">{app.program} &middot; {app.level} &middot; <span className={'badge ' + app.status}>{app.status}</span></p>
         {searchParams.applied && <p role="status" className="okmsg">Application received. Upload your documents below so we can review it.</p>}
+        {app.docs_note && (
+          <p role="status" className="okmsg warn">
+            <strong>Message from admissions:</strong> {app.docs_note}
+          </p>
+        )}
         {missing.length > 0 ? (
           <p role="status" className="okmsg warn">Still needed: {missing.map((m) => m.label).join(', ')}.</p>
         ) : (

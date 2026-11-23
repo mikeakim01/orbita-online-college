@@ -1,14 +1,14 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { setApplicationStatus, setCertificateRevoked } from '@/app/actions';
+import { setApplicationStatus, setCertificateRevoked, setDocumentVerified, setDocsNote } from '@/app/actions';
 import { site } from '@/lib/site';
 import { slotsFor, missingFor } from '@/lib/documents';
 
 export const metadata = { title: 'Admin' };
 export const dynamic = 'force-dynamic';
 
-export default async function Admin() {
+export default async function Admin({ searchParams }: { searchParams: { blocked?: string } }) {
   const supabase = createClient();
   const {
     data: { user },
@@ -24,7 +24,9 @@ export default async function Admin() {
     admin.from('profiles').select('id, full_name'),
     admin.auth.admin.listUsers({ perPage: 1000 }),
   ]);
-  const allDocs = site.docRules ? (await admin.from('application_documents').select('id, application_id, doc_type, file_name')).data ?? [] : [];
+  const allDocs = site.docRules ? (await admin.from('application_documents').select('id, application_id, doc_type, file_name, verified')).data ?? [] : [];
+  const missOf = (a: { id: string; level: string }) => (site.docRules ? missingFor(a.level, allDocs.filter((d) => d.application_id === a.id).map((d) => d.doc_type)) : []);
+  const blockedApp = (apps ?? []).find((a) => a.id === searchParams.blocked);
   const name = new Map((profs ?? []).map((p) => [p.id, p.full_name as string]));
   const email = new Map((users.data?.users ?? []).map((u) => [u.id, u.email ?? '']));
   const pending = (apps ?? []).filter((a) => a.status === 'submitted').length;
@@ -37,6 +39,11 @@ export default async function Admin() {
           {pending} application{pending === 1 ? '' : 's'} waiting &middot; {apps?.length ?? 0} total &middot; {certs?.length ?? 0} certificates
         </p>
 
+        {blockedApp && (
+          <p role="alert" className="alert">
+            Not approved: {name.get(blockedApp.user_id) || 'this applicant'} is missing {missOf(blockedApp).map((m) => m.label).join(', ') || 'required documents'}. Use the message box to ask for them.
+          </p>
+        )}
         <h2 className="sub">Applications</h2>
         <div className="tablewrap">
           <table>
@@ -65,16 +72,36 @@ export default async function Admin() {
                     <td className="docbox">
                       {(() => {
                         const mine = allDocs.filter((d) => d.application_id === a.id);
-                        const miss = missingFor(a.level, mine.map((d) => d.doc_type));
+                        const miss = missOf(a);
                         return (
                           <>
                             {mine.map((d) => (
-                              <a key={d.id} href={'/documents/file/' + d.id} target="_blank" rel="noopener noreferrer">
-                                {(slotsFor(a.level).find((s) => s.key === d.doc_type)?.label ?? d.doc_type)}
-                              </a>
+                              <div key={d.id} className="docrow">
+                                <a href={'/documents/file/' + d.id} target="_blank" rel="noopener noreferrer">
+                                  {slotsFor(a.level).find((s) => s.key === d.doc_type)?.label ?? d.doc_type}
+                                </a>
+                                {d.verified && <span className="badge approved">verified</span>}
+                                <form action={setDocumentVerified}>
+                                  <input type="hidden" name="id" value={d.id} />
+                                  <input type="hidden" name="verified" value={d.verified ? 'false' : 'true'} />
+                                  <button className="btn sm ghost" type="submit">
+                                    {d.verified ? 'Unverify' : 'Verify'}
+                                  </button>
+                                </form>
+                              </div>
                             ))}
                             {miss.length > 0 && <span className="muted">Missing: {miss.map((m) => m.label).join(', ')}</span>}
                             {!mine.length && !miss.length && <span className="muted">None</span>}
+                            {(miss.length > 0 || a.docs_note) && (
+                              <form action={setDocsNote} className="notefrm">
+                                <input type="hidden" name="id" value={a.id} />
+                                <label className="sr-only" htmlFor={'n-' + a.id}>Message to applicant</label>
+                                <textarea id={'n-' + a.id} name="note" rows={3} maxLength={500} defaultValue={a.docs_note ?? 'Please upload: ' + miss.map((m) => m.label).join(', ') + '.'} />
+                                <button className="btn sm ghost" type="submit">
+                                  {a.docs_note ? 'Update or clear message' : 'Send request'}
+                                </button>
+                              </form>
+                            )}
                           </>
                         );
                       })()}
@@ -89,7 +116,7 @@ export default async function Admin() {
                         <form action={setApplicationStatus} key={s}>
                           <input type="hidden" name="id" value={a.id} />
                           <input type="hidden" name="status" value={s} />
-                          <button className="btn sm ghost" type="submit" disabled={a.status === s}>
+                          <button className="btn sm ghost" type="submit" disabled={a.status === s || (s === 'approved' && missOf(a).length > 0)} title={s === 'approved' && missOf(a).length > 0 ? 'Required documents are missing' : undefined}>
                             {s === 'approved' ? 'Approve' : 'Reject'}
                           </button>
                         </form>

@@ -8,8 +8,16 @@ create table if not exists public.application_documents (
   file_path text not null unique,
   file_name text not null,
   size_bytes int not null,
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  verified boolean not null default false,
+  verified_at timestamptz
 );
+-- For installs that already ran an earlier version of this file:
+alter table public.application_documents add column if not exists verified boolean not null default false;
+alter table public.application_documents add column if not exists verified_at timestamptz;
+-- A note from admissions to the applicant, for example a request for a missing document.
+alter table public.applications add column if not exists docs_note text;
+alter table public.applications add column if not exists docs_note_at timestamptz;
 create index if not exists application_documents_app_idx on public.application_documents (application_id);
 alter table public.application_documents enable row level security;
 

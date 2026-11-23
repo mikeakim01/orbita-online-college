@@ -117,7 +117,18 @@ export async function setApplicationStatus(f: FormData) {
   const id = str(f, 'id');
   const status = str(f, 'status');
   if (!['approved', 'rejected', 'submitted'].includes(status)) return;
-  await createAdminClient().from('applications').update({ status }).eq('id', id);
+  const adminDb = createAdminClient();
+  if (status === 'approved') {
+    // Documents gate: an application cannot be approved while a required document is missing.
+    const { data: app } = await adminDb.from('applications').select('level').eq('id', id).maybeSingle();
+    const required = (site.docRules?.[app?.level ?? ''] ?? []).filter((s) => s.required);
+    if (required.length) {
+      const { data: have } = await adminDb.from('application_documents').select('doc_type').eq('application_id', id);
+      const got = new Set((have ?? []).map((d) => d.doc_type));
+      if (required.some((s) => !got.has(s.key))) redirect('/admin?blocked=' + encodeURIComponent(id));
+    }
+  }
+  await adminDb.from('applications').update({ status }).eq('id', id);
   revalidatePath('/admin');
 }
 
@@ -206,6 +217,7 @@ export async function submitExam(code: string, answers: number[]): Promise<ExamR
   return { score, correct, total: qs.length, passed, serial };
 }
 
+
 export async function recordDocument(input: { applicationId: string; docType: string; path: string; name: string; size: number }): Promise<{ error?: string }> {
   const supabase = createClient();
   const {
@@ -242,6 +254,29 @@ export async function recordDocument(input: { applicationId: string; docType: st
   revalidatePath('/documents/' + applicationId);
   revalidatePath('/dashboard');
   return {};
+}
+
+export async function setDocumentVerified(f: FormData) {
+  await requireAdmin();
+  const verified = str(f, 'verified') === 'true';
+  await createAdminClient()
+    .from('application_documents')
+    .update({ verified, verified_at: verified ? new Date().toISOString() : null })
+    .eq('id', str(f, 'id'));
+  revalidatePath('/admin');
+  revalidatePath('/documents', 'layout');
+}
+
+export async function setDocsNote(f: FormData) {
+  await requireAdmin();
+  const note = str(f, 'note').slice(0, 500);
+  await createAdminClient()
+    .from('applications')
+    .update({ docs_note: note || null, docs_note_at: note ? new Date().toISOString() : null })
+    .eq('id', str(f, 'id'));
+  revalidatePath('/admin');
+  revalidatePath('/dashboard');
+  revalidatePath('/documents', 'layout');
 }
 
 export async function deleteDocument(id: string): Promise<{ error?: string }> {
