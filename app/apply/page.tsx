@@ -66,7 +66,7 @@ export default function Apply({ searchParams }: { searchParams: { program?: stri
                 <li key={d}>{d}</li>
               ))}
             </ul>
-            <p className="muted">You do not upload documents now. We ask for them after your application is approved.</p>
+            <p className="muted">After you send your application, the next screen lets you upload these files (PDF, JPG or PNG, up to 5 MB each). You can add or replace them until an admissions officer decides.</p>
           </div>
           <div>
             <h2>Questions about applying</h2>

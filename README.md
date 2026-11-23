@@ -13,6 +13,7 @@ Built with Next.js 14 (App Router, TypeScript) and Supabase (Postgres and login)
 
 - Sign up with email confirmation, sign in, sign out, password reset by email
 - Apply for a program (saved to the database), see the status on the dashboard
+- Where `supabase/documents.sql` exists: applicants upload their documents (PDF, JPG, PNG up to 5 MB) after applying, and admins open them from the admin screen
 - Admin screen: approve or reject applications, revoke or restore certificates
 - Exams unlock after an application for that program is approved. Answers are graded on the server (the correct
   answers never reach the browser), 3 attempts per exam per 24 hours
@@ -27,6 +28,7 @@ Not included: online payments, automatic emails other than login emails, live cl
 1. Go to https://supabase.com, create a project, and wait for it to finish starting.
 2. Open **SQL editor > New query**, paste the whole of `supabase/schema.sql`, and run it.
 3. Open a new query, paste `supabase/seed.sql`, and run it (this adds the sample exams).
+   If your site has a `supabase/documents.sql` file, also run it in a new query. It adds applicant document uploads (a private storage bucket and its rules).
 4. **Project settings > API**: copy the Project URL, the `anon` public key and the `service_role` key.
 5. **Authentication > URL configuration**:
    - Site URL: your final address, for example `https://orbita-college.vercel.app`

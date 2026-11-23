@@ -95,8 +95,9 @@ export async function submitApplication(_: FormState, f: FormData): Promise<Form
     .in('status', ['submitted', 'approved'])
     .limit(1);
   if (existing && existing.length) return { error: 'You already have an active application for this program and level.' };
-  const { error } = await supabase.from('applications').insert({ user_id: user.id, program, level, statement });
-  if (error) return { error: 'We could not save your application. Please try again.' };
+  const { data: created, error } = await supabase.from('applications').insert({ user_id: user.id, program, level, statement }).select('id').single();
+  if (error || !created) return { error: 'We could not save your application. Please try again.' };
+  if ((site.docRules?.[level] ?? []).length) redirect('/documents/' + created.id + '?applied=1');
   redirect('/dashboard?applied=1');
 }
 
@@ -203,4 +204,58 @@ export async function submitExam(code: string, answers: number[]): Promise<ExamR
   }
   revalidatePath('/dashboard');
   return { score, correct, total: qs.length, passed, serial };
+}
+
+export async function recordDocument(input: { applicationId: string; docType: string; path: string; name: string; size: number }): Promise<{ error?: string }> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: 'Please sign in again.' };
+  const { applicationId, docType, path, size } = input;
+  const name = String(input.name ?? '').slice(0, 120);
+  const { data: app } = await supabase.from('applications').select('id, level, status').eq('id', applicationId).eq('user_id', user.id).maybeSingle();
+  if (!app) return { error: 'Application not found.' };
+  if (app.status !== 'submitted') return { error: 'Uploads are closed for this application.' };
+  if (!(site.docRules?.[app.level] ?? []).some((s) => s.key === docType)) return { error: 'That document is not needed for this application.' };
+  if (typeof path !== 'string' || !path.startsWith(user.id + '/' + applicationId + '/') || path.includes('..')) return { error: 'Invalid file.' };
+  if (!Number.isFinite(size) || size <= 0 || size > 5 * 1024 * 1024) return { error: 'The file is larger than 5 MB.' };
+
+  // One file per slot: replace any earlier upload of the same type.
+  const { data: old } = await supabase.from('application_documents').select('id, file_path').eq('application_id', applicationId).eq('doc_type', docType);
+  const { error } = await supabase.from('application_documents').insert({
+    application_id: applicationId,
+    user_id: user.id,
+    doc_type: docType,
+    file_path: path,
+    file_name: name || 'document',
+    size_bytes: Math.round(size),
+  });
+  if (error) {
+    await supabase.storage.from('application-docs').remove([path]);
+    return { error: 'We could not save that file. Please try again.' };
+  }
+  if (old && old.length) {
+    await supabase.from('application_documents').delete().in('id', old.map((o) => o.id));
+    await supabase.storage.from('application-docs').remove(old.map((o) => o.file_path));
+  }
+  revalidatePath('/documents/' + applicationId);
+  revalidatePath('/dashboard');
+  return {};
+}
+
+export async function deleteDocument(id: string): Promise<{ error?: string }> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: 'Please sign in again.' };
+  const { data: doc } = await supabase.from('application_documents').select('id, file_path, application_id').eq('id', id).eq('user_id', user.id).maybeSingle();
+  if (!doc) return { error: 'File not found.' };
+  const { error } = await supabase.from('application_documents').delete().eq('id', id);
+  if (error) return { error: 'Uploads are closed for this application.' };
+  await supabase.storage.from('application-docs').remove([doc.file_path]);
+  revalidatePath('/documents/' + doc.application_id);
+  revalidatePath('/dashboard');
+  return {};
 }

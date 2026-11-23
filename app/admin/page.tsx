@@ -2,6 +2,8 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { setApplicationStatus, setCertificateRevoked } from '@/app/actions';
+import { site } from '@/lib/site';
+import { slotsFor, missingFor } from '@/lib/documents';
 
 export const metadata = { title: 'Admin' };
 export const dynamic = 'force-dynamic';
@@ -22,6 +24,7 @@ export default async function Admin() {
     admin.from('profiles').select('id, full_name'),
     admin.auth.admin.listUsers({ perPage: 1000 }),
   ]);
+  const allDocs = site.docRules ? (await admin.from('application_documents').select('id, application_id, doc_type, file_name')).data ?? [] : [];
   const name = new Map((profs ?? []).map((p) => [p.id, p.full_name as string]));
   const email = new Map((users.data?.users ?? []).map((u) => [u.id, u.email ?? '']));
   const pending = (apps ?? []).filter((a) => a.status === 'submitted').length;
@@ -43,6 +46,7 @@ export default async function Admin() {
                 <th>Program</th>
                 <th>Level</th>
                 <th>Statement</th>
+                {site.docRules && <th>Documents</th>}
                 <th>Status</th>
                 <th>Decide</th>
               </tr>
@@ -57,6 +61,25 @@ export default async function Admin() {
                   <td>{a.program}</td>
                   <td>{a.level}</td>
                   <td className="small">{a.statement}</td>
+                  {site.docRules && (
+                    <td className="docbox">
+                      {(() => {
+                        const mine = allDocs.filter((d) => d.application_id === a.id);
+                        const miss = missingFor(a.level, mine.map((d) => d.doc_type));
+                        return (
+                          <>
+                            {mine.map((d) => (
+                              <a key={d.id} href={'/documents/file/' + d.id} target="_blank" rel="noopener noreferrer">
+                                {(slotsFor(a.level).find((s) => s.key === d.doc_type)?.label ?? d.doc_type)}
+                              </a>
+                            ))}
+                            {miss.length > 0 && <span className="muted">Missing: {miss.map((m) => m.label).join(', ')}</span>}
+                            {!mine.length && !miss.length && <span className="muted">None</span>}
+                          </>
+                        );
+                      })()}
+                    </td>
+                  )}
                   <td>
                     <span className={'badge ' + a.status}>{a.status}</span>
                   </td>

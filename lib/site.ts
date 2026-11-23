@@ -8,6 +8,7 @@ export const site: {
   hero: { kicker: string; title: string; text: string };
   programsHeading: string; programsIntro: string; feeNote: string;
   programs: Program[]; applyLevels: string[]; programAccess: Record<string, string[]>; levels: Level[]; courses?: Course[];
+  docRules?: Record<string, { key: string; label: string; hint: string; required: boolean }[]>;
   faq: { q: string; a: string }[];
   signatory: { name: string; title: string };
   registrar: { name: string; title: string };
@@ -121,6 +122,126 @@ export const site: {
       "fee": "$4,500 per year (Satellite Systems $5,100)"
     }
   ],
+  "docRules": {
+    "Certificate": [
+      {
+        "key": "id",
+        "label": "Passport or national ID",
+        "hint": "The photo page of your passport, or both sides of your national ID.",
+        "required": true
+      },
+      {
+        "key": "prerequisite",
+        "label": "Proof of prerequisite",
+        "hint": "Mid and Pro courses only: a certificate, CV or letter showing the prerequisite listed on the course.",
+        "required": false
+      }
+    ],
+    "Diploma": [
+      {
+        "key": "id",
+        "label": "Passport or national ID",
+        "hint": "The photo page of your passport, or both sides of your national ID.",
+        "required": true
+      },
+      {
+        "key": "secondary",
+        "label": "Secondary school certificate and results",
+        "hint": "Your final school certificate with your subject results.",
+        "required": true
+      }
+    ],
+    "Bachelor": [
+      {
+        "key": "id",
+        "label": "Passport or national ID",
+        "hint": "The photo page of your passport, or both sides of your national ID.",
+        "required": true
+      },
+      {
+        "key": "secondary",
+        "label": "Secondary school certificate and results",
+        "hint": "Your final school certificate with your subject results.",
+        "required": true
+      },
+      {
+        "key": "english",
+        "label": "Proof of English ability",
+        "hint": "Only if English is not your first language, for example a test result or a letter from your last school.",
+        "required": false
+      }
+    ],
+    "Master": [
+      {
+        "key": "id",
+        "label": "Passport or national ID",
+        "hint": "The photo page of your passport, or both sides of your national ID.",
+        "required": true
+      },
+      {
+        "key": "degree",
+        "label": "Previous degree certificate",
+        "hint": "The certificate for your Bachelor degree (Master applicants) or Master degree (PhD applicants).",
+        "required": true
+      },
+      {
+        "key": "transcript",
+        "label": "Academic transcript",
+        "hint": "Official transcript from your last institution.",
+        "required": true
+      },
+      {
+        "key": "cv",
+        "label": "CV or resume",
+        "hint": "One or two pages.",
+        "required": false
+      },
+      {
+        "key": "english",
+        "label": "Proof of English ability",
+        "hint": "Only if English is not your first language, for example a test result or a letter from your last school.",
+        "required": false
+      }
+    ],
+    "PhD": [
+      {
+        "key": "id",
+        "label": "Passport or national ID",
+        "hint": "The photo page of your passport, or both sides of your national ID.",
+        "required": true
+      },
+      {
+        "key": "degree",
+        "label": "Previous degree certificate",
+        "hint": "The certificate for your Bachelor degree (Master applicants) or Master degree (PhD applicants).",
+        "required": true
+      },
+      {
+        "key": "transcript",
+        "label": "Academic transcript",
+        "hint": "Official transcript from your last institution.",
+        "required": true
+      },
+      {
+        "key": "proposal",
+        "label": "Research proposal",
+        "hint": "One to two pages describing the question you want to research.",
+        "required": true
+      },
+      {
+        "key": "cv",
+        "label": "CV or resume",
+        "hint": "One or two pages.",
+        "required": false
+      },
+      {
+        "key": "english",
+        "label": "Proof of English ability",
+        "hint": "Only if English is not your first language, for example a test result or a letter from your last school.",
+        "required": false
+      }
+    ]
+  },
   "courses": [
     {
       "tier": "Entry",

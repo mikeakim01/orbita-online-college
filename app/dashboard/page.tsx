@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { site } from '@/lib/site';
+import { slotsFor, missingFor } from '@/lib/documents';
 
 export const metadata = { title: 'Dashboard' };
 export const dynamic = 'force-dynamic';
@@ -21,6 +22,9 @@ export default async function Dashboard({ searchParams }: { searchParams: { appl
     supabase.from('exams').select('*').order('code'),
   ]);
 
+  const docRows = site.docRules && apps && apps.length
+    ? ((await supabase.from('application_documents').select('application_id, doc_type').in('application_id', apps.map((a) => a.id))).data ?? [])
+    : [];
   const approved = (apps ?? []).filter((a) => a.status === 'approved').map((a) => a.program as string);
   const open = (exams ?? []).filter((e) =>
     approved.some((p) => p === e.program || (site.programAccess[p] ?? []).includes(e.program))
@@ -54,6 +58,7 @@ export default async function Dashboard({ searchParams }: { searchParams: { appl
                   <th>Level</th>
                   <th>Status</th>
                   <th>Sent</th>
+                  {site.docRules && <th>Documents</th>}
                 </tr>
               </thead>
               <tbody>
@@ -65,6 +70,21 @@ export default async function Dashboard({ searchParams }: { searchParams: { appl
                       <span className={'badge ' + a.status}>{a.status}</span>
                     </td>
                     <td>{new Date(a.created_at).toISOString().slice(0, 10)}</td>
+                    {site.docRules && (
+                      <td>
+                        {slotsFor(a.level).length ? (
+                          <>
+                            {(() => {
+                              const miss = missingFor(a.level, docRows.filter((d) => d.application_id === a.id).map((d) => d.doc_type));
+                              return miss.length ? miss.length + ' still needed' : 'Complete';
+                            })()}{' '}
+                            <Link href={'/documents/' + a.id}>{a.status === 'submitted' ? 'Upload' : 'View'}</Link>
+                          </>
+                        ) : (
+                          <span className="muted">None needed</span>
+                        )}
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>
