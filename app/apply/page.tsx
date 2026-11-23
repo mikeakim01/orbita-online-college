@@ -15,12 +15,12 @@ const STEPS = [
 const DOCS = [
   'A valid passport or national ID',
   'Your highest qualification certificate and transcript',
-  'For Master and PhD: your previous degree certificate',
+  'For Master and PhD: your previous degree certificate', 'For Certificate courses: nothing extra, unless the course lists a prerequisite',
   'For PhD: a research proposal of one to two pages',
   'Proof of English language ability, if English is not your first language',
 ];
 
-export default function Apply({ searchParams }: { searchParams: { program?: string } }) {
+export default function Apply({ searchParams }: { searchParams: { program?: string; level?: string; course?: string } }) {
   return (
     <>
       <section className="apply-hero">
@@ -29,7 +29,7 @@ export default function Apply({ searchParams }: { searchParams: { program?: stri
             <p className="eyebrow">ADMISSIONS · INTAKE {site.intake.toUpperCase()}</p>
             <h1>Start your application</h1>
             <p className="lead">
-              Pick your faculty and level, check what you need, and send your application in a few minutes. Application fee: {site.appFee}.
+              Pick your faculty and level, from a short certificate course to a PhD, check what you need, and send your application in a few minutes. Application fee: {site.appFee}.
             </p>
           </div>
           <OrbitArt />
@@ -38,7 +38,7 @@ export default function Apply({ searchParams }: { searchParams: { program?: stri
 
       <section className="section">
         <div className="container">
-          <ApplyForm initialProgram={searchParams.program} />
+          <ApplyForm initialProgram={searchParams.program} initialLevel={searchParams.level} initialCourse={searchParams.course} />
         </div>
       </section>
 

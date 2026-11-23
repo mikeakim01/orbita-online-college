@@ -24,3 +24,4 @@
 .qa summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-weight:700}
 .gated .btn{opacity:.5}
 @media(max-width:860px){.apply-hero-in,.apply-grid,.two{grid-template-columns:1fr}.apply-summary{position:static}.orbit-art{max-width:280px}}
+.apply-summary .facts+p{margin-top:16px}

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { site } from '@/lib/site';
 import Calculator from '@/components/Calculator';
+import CourseCatalog from '@/components/CourseCatalog';
 
 export const metadata = { title: 'Programs and fees' };
 
@@ -60,6 +61,8 @@ export default function Programs() {
           <p className="muted small">{site.feeNote}</p>
         </div>
       </section>
+
+      <CourseCatalog />
 
       <section className="section bordered" id="calculator">
         <div className="container">
