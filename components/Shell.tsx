@@ -2,6 +2,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import ThemeToggle from './ThemeToggle';
 import Icon from './Icon';
 import Logo from './Logo';
 import { site } from '@/lib/site';
@@ -110,6 +111,7 @@ export default function Shell({
             <input id="gs" name="q" type="search" placeholder="Search programs and courses..." />
           </form>
           <div className="spacer" />
+          <ThemeToggle />
           <Link href="/notifications" className="iconbtn" aria-label={notifCount ? notifCount + ' items need your attention' : 'Notifications'}>
             <Icon name="bell" />
             {notifCount > 0 && <span className="dot">{notifCount > 9 ? '9+' : notifCount}</span>}

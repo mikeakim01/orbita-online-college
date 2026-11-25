@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { site } from '@/lib/site';
 import Icon, { ProgramIcon } from '@/components/Icon';
 import EarthBanner from '@/components/EarthBanner';
+import Scene, { sceneFor } from '@/components/Art';
 
 export const metadata = {
   title: site.name,
@@ -44,8 +45,11 @@ export default function Home() {
               Next intake: {site.intake}. Application fee: {site.appFee}.
             </p>
           </div>
-          <div className="hero-art card" style={{ padding: 0, overflow: 'hidden', background: '#070b19' }}>
-            <EarthBanner />
+          <div className="hero-stack">
+            <div className="hero-art pic card on-dark">
+              <EarthBanner />
+            </div>
+            <div className="hero-mini pic card"><Scene kind="learn" label="Studying online with a laptop and a certificate" /></div>
           </div>
         </div>
         <div className="container">
@@ -82,7 +86,9 @@ export default function Home() {
           <h2>{site.programsHeading}</h2>
           <div className="grid" style={{ marginTop: 24 }}>
             {site.programs.map((p) => (
-              <div className="card prog-card" key={p.name}>
+              <div className="card prog-card has-thumb" key={p.name}>
+                <div className="thumb"><Scene kind={sceneFor(p.name, p.slug)} label={p.name + ' illustration'} /></div>
+                <div className="body">
                 <ProgramIcon slug={p.slug} size={22} />
                 <h3>{p.name}</h3>
                 <p className="muted" style={{ margin: 0 }}>{p.blurb}</p>
@@ -92,11 +98,40 @@ export default function Home() {
                   ))}
                 </ul>
                 <Link href={'/programs?faculty=' + p.slug}>View the faculty &rsaquo;</Link>
+                </div>
               </div>
             ))}
           </div>
         </div>
       </section>
+
+      {(site.courses?.length ?? 0) > 0 && (
+        <section className="section bordered">
+          <div className="container">
+            <div className="sec-title">
+              <div>
+                <p className="kicker">Short courses</p>
+                <h2>Start with a course, build to a diploma</h2>
+              </div>
+              <Link href="/programs#courses">All {site.courses!.length} courses &rarr;</Link>
+            </div>
+            <div className="pics">
+              {site.courses!.filter((c) => /blockchain|network|cloud|python|cyber|satellite/i.test(c.name)).slice(0, 6).map((c) => (
+                <Link key={c.name} className="card has-thumb course-tile" href={'/programs?q=' + encodeURIComponent(c.name) + '#courses'}>
+                  <div className="thumb"><Scene kind={sceneFor(c.name, c.faculty)} /></div>
+                  <div className="body">
+                    <div className="course-meta">
+                      <span className={'badge ' + (c.tier === 'Entry' ? 'ok' : c.tier === 'Mid' ? 'violet' : 'gold')}>{c.tier}</span>
+                      <span className="muted small">{c.weeks} weeks &middot; ${c.fee.toLocaleString('en-US')}</span>
+                    </div>
+                    <h3>{c.name}</h3>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className="section bordered" id="how">
         <div className="container">

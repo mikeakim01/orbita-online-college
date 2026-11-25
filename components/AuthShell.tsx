@@ -2,6 +2,7 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 import Logo from './Logo';
 import Icon from './Icon';
+import ThemeToggle from './ThemeToggle';
 import EarthBanner from './EarthBanner';
 import { site } from '@/lib/site';
 
@@ -38,6 +39,7 @@ export default function AuthShell({ title, intro, children }: { title: string; i
         <EarthBanner className="hide-sm" />
       </aside>
       <main id="main" className="auth-main">
+        <div className="auth-tools"><ThemeToggle /></div>
         <div className="auth-box">
           <a className="skip" href="#main">
             Skip to content

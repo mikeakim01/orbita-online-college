@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Scene, { sceneFor } from '@/components/Art';
 import Icon, { ProgramIcon } from '@/components/Icon';
 import { site } from '@/lib/site';
 import { requireSession, day } from '@/lib/portal';
@@ -42,6 +43,7 @@ export default async function Exams() {
               const cy = slugOf(e.program) === 'satellite';
               return (
                 <div className={'exam-card' + (cy ? ' cyan' : '')} key={e.id}>
+                  <div className="strip"><Scene kind={sceneFor(e.title, slugOf(e.program))} /></div>
                   <div className="row" style={{ flexWrap: 'nowrap' }}>
                     <ProgramIcon slug={slugOf(e.program)} size={22} />
                     <div><h3 style={{ margin: 0 }}>{e.title}</h3><span className="muted small">{e.program}</span></div>

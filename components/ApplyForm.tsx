@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useFormState, useFormStatus } from 'react-dom';
 import { submitApplication } from '@/app/actions';
 import { site } from '@/lib/site';
+import Scene, { sceneFor } from '@/components/Art';
 import type { FormState } from '@/lib/types';
 
 // Reads the yearly fee for a program from the text in lib/site.ts, so fees are edited in one place.
@@ -114,6 +115,7 @@ export default function ApplyForm({ initialProgram, initialLevel, initialCourse 
       </form>
 
       <aside className="card apply-summary" aria-live="polite">
+        <div className="thumb"><Scene kind={sceneFor(course ? course.name : p.name, p.slug)} /></div>
         <p className="eyebrow">{p.native}</p>
         <h2 className="sub0">{p.name}</h2>
         <p>{p.blurb}</p>

@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { site } from '@/lib/site';
 import Logo from './Logo';
+import ThemeToggle from './ThemeToggle';
 
 export default async function Header() {
   const supabase = createClient();
@@ -34,6 +35,7 @@ export default async function Header() {
               </Link>
             </>
           )}
+          <ThemeToggle />
         </nav>
       </div>
     </header>

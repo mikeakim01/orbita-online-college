@@ -15,12 +15,14 @@ export default function ActionForm({
   confirm,
   children,
   className,
+  resetOnSuccess,
 }: {
   action: (f: FormData) => Promise<unknown> | unknown;
   success: string;
   confirm?: Confirm;
   children: ReactNode;
   className?: string;
+  resetOnSuccess?: boolean;
 }) {
   const router = useRouter();
   const toast = useToast();
@@ -33,8 +35,13 @@ export default function ActionForm({
     const fd = new FormData(ref.current!);
     start(async () => {
       try {
-        await action(fd);
+        const r = await action(fd);
+        if (r && typeof r === 'object' && 'error' in r && (r as { error?: string }).error) {
+          toast(String((r as { error: string }).error), 'error');
+          return;
+        }
         toast(success, 'success');
+        if (resetOnSuccess) ref.current?.reset();
         router.refresh();
       } catch (e) {
         if (e && typeof e === 'object' && 'digest' in e && String((e as { digest: string }).digest).startsWith('NEXT_REDIRECT')) throw e;

@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { site } from '@/lib/site';
 import Calculator from '@/components/Calculator';
 import Icon, { ProgramIcon } from '@/components/Icon';
+import Scene, { sceneFor } from '@/components/Art';
 
 export const metadata = { title: 'Programs and fees', description: site.programsIntro, alternates: { canonical: '/programs' } };
 
@@ -70,7 +71,9 @@ export default function Programs({ searchParams }: { searchParams: { q?: string;
         {programs.length ? (
           <div className="grid">
             {programs.map((p) => (
-              <article className="card prog-card" key={p.name} id={p.slug}>
+              <article className="card prog-card has-thumb" key={p.name} id={p.slug}>
+                <div className="thumb"><Scene kind={sceneFor(p.name, p.slug)} label={p.name + ' illustration'} /></div>
+                <div className="body">
                 <ProgramIcon slug={p.slug} size={22} />
                 {p.native && <p className="kicker" style={{ margin: 0 }}>{p.native}</p>}
                 <h3>{p.name}</h3>
@@ -84,6 +87,7 @@ export default function Programs({ searchParams }: { searchParams: { q?: string;
                 <Link className="btn sm" href={'/apply?program=' + p.slug}>
                   Apply to this faculty
                 </Link>
+                </div>
               </article>
             ))}
           </div>
@@ -135,7 +139,9 @@ export default function Programs({ searchParams }: { searchParams: { q?: string;
               {courses.map((c) => {
                 const fac = site.programs.find((p) => p.slug === c.faculty);
                 return (
-                  <article className="card prog-card" key={c.name}>
+                  <article className="card prog-card has-thumb" key={c.name}>
+                    <div className="thumb"><Scene kind={sceneFor(c.name, c.faculty)} label={c.name + ' illustration'} /></div>
+                    <div className="body">
                     <div className="meta">
                       <span className={'badge ' + (c.tier === 'Entry' ? 'ok' : c.tier === 'Mid' ? 'violet' : 'gold')}>{c.tier} level</span>
                       <span className="badge">{fac?.name}</span>
@@ -148,6 +154,7 @@ export default function Programs({ searchParams }: { searchParams: { q?: string;
                     <Link className="btn sm" href={'/apply?program=' + c.faculty + '&level=Certificate&course=' + encodeURIComponent(c.name)}>
                       Apply for this course
                     </Link>
+                  </div>
                   </article>
                 );
               })}

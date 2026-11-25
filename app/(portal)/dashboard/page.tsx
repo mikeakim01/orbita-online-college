@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Scene, { sceneFor } from '@/components/Art';
 import Icon, { ProgramIcon } from '@/components/Icon';
 import EarthBanner from '@/components/EarthBanner';
 import { site } from '@/lib/site';
@@ -116,6 +117,7 @@ export default async function Dashboard() {
             <div className="stack">
               {open.slice(0, 2).map((e) => (
                 <div className={'exam-card' + (slugOf(e.program) === 'satellite' ? ' cyan' : '')} key={e.id}>
+                  <div className="strip"><Scene kind={sceneFor(e.title, slugOf(e.program))} /></div>
                   <div className="row" style={{ flexWrap: 'nowrap' }}>
                     <ProgramIcon slug={slugOf(e.program)} size={22} />
                     <div>
