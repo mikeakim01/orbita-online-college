@@ -88,13 +88,15 @@ export async function submitApplication(_: FormState, f: FormData): Promise<Form
   if (!site.applyLevels.includes(level)) return { error: 'Choose a level.' };
   const { data: existing } = await supabase
     .from('applications')
-    .select('id')
+    .select('id, statement')
     .eq('user_id', user.id)
     .eq('program', program)
     .eq('level', level)
-    .in('status', ['submitted', 'approved'])
-    .limit(1);
-  if (existing && existing.length) return { error: 'You already have an active application for this program and level.' };
+    .in('status', ['submitted', 'approved']);
+  // Short courses: a student may apply for several different courses in the same faculty.
+  const courseOf = (s: unknown) => (String(s ?? '').match(/^Course: (.+)$/m)?.[1] ?? '').trim();
+  const dup = (existing ?? []).filter((x) => level !== 'Certificate' || courseOf(x.statement) === courseOf(statement));
+  if (dup.length) return { error: 'You already have an active application for this program and level.' + (level === 'Certificate' ? ' Choose a different course to apply again.' : '') };
   const { data: created, error } = await supabase.from('applications').insert({ user_id: user.id, program, level, statement }).select('id').single();
   if (error || !created) return { error: 'We could not save your application. Please try again.' };
   if ((site.docRules?.[level] ?? []).length) redirect('/documents/' + created.id + '?toast=applied');
