@@ -38,7 +38,7 @@ const PORTAL = ['Track your applications and their status', 'Upload documents an
 export default function Home() {
   const rows = programmes().map((p) => ({ title: p.title, href: p.href, faculty: p.faculty.name, facultySlug: p.faculty.slug, level: p.level.name, duration: p.level.duration, entry: p.level.entry, fee: feeLabel(p.level.name, p.faculty.name) }));
   const courseRows = courses().map((c) => ({ slug: courseSlug(c), name: c.name, blurb: c.blurb, category: categoryOf(c), tier: c.tier, weeks: c.weeks, fee: c.fee, faculty: c.faculty, scene: sceneFor(c.name, c.faculty) }));
-  const ld = { '@context': 'https://schema.org', '@type': 'EducationalOrganization', name: site.name, description: site.hero.text, email: site.email };
+  const ld = { '@context': 'https://schema.org', '@type': 'EducationalOrganization', name: site.name, description: site.hero.text, ...(site.email ? { email: site.email } : {}) };
 
   return (
     <>
@@ -73,7 +73,7 @@ export default function Home() {
             <ul className="checks">
               <li>Technology education from short courses to doctoral level</li>
               <li>Cyber security taught as a practical discipline</li>
-              <li>Satellite systems, including a remote ground-station lab</li>
+              <li>Satellite systems, from orbits to ground operations</li>
               <li>Flexible digital learning and professional development</li>
             </ul>
             <p style={{ marginTop: 26 }}><Link className="more" href="/about">Read about the institute <Icon name="arrow" size={16} /></Link></p>

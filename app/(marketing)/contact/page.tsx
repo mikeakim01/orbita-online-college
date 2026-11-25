@@ -17,22 +17,36 @@ export default function Contact() {
       <section className="band">
         <div className="container">
           <div className="cards">
-            <div className="contact-card">
-              <span className="ic"><Icon name="mail" size={22} /></span>
-              <h3>Email</h3>
-              <a href={'mailto:' + site.email}>{site.email}</a>
-              <span className="muted small" style={{ fontWeight: 400 }}>Best for admissions and program questions.</span>
-            </div>
-            <div className="contact-card">
-              <span className="ic"><Icon name="phone" size={22} /></span>
-              <h3>Telephone</h3>
-              <span>{site.phone}</span>
-            </div>
-            <div className="contact-card">
-              <span className="ic"><Icon name="home" size={22} /></span>
-              <h3>Location</h3>
-              <span>{site.city}</span>
-            </div>
+            {site.email && (
+              <div className="contact-card">
+                <span className="ic"><Icon name="mail" size={22} /></span>
+                <h3>Email</h3>
+                <a href={'mailto:' + site.email}>{site.email}</a>
+                <span className="muted small" style={{ fontWeight: 400 }}>Best for admissions and program questions.</span>
+              </div>
+            )}
+            {site.phone && (
+              <div className="contact-card">
+                <span className="ic"><Icon name="phone" size={22} /></span>
+                <h3>Telephone</h3>
+                <span>{site.phone}</span>
+              </div>
+            )}
+            {site.city && (
+              <div className="contact-card">
+                <span className="ic"><Icon name="home" size={22} /></span>
+                <h3>Location</h3>
+                <span>{site.city}</span>
+              </div>
+            )}
+            {!site.email && !site.phone && !site.city && (
+              <div className="contact-card">
+                <span className="ic"><Icon name="mail" size={22} /></span>
+                <h3>Admissions</h3>
+                <span>Create an account and send your application. The admissions team replies through your student portal.</span>
+                <Link href="/register">Create an account</Link>
+              </div>
+            )}
           </div>
           <div className="prose2" style={{ marginTop: 48 }}>
             <h2>Already a student?</h2>

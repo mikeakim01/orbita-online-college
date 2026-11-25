@@ -46,12 +46,12 @@ export default function Help() {
         <aside className="card" aria-labelledby="h-con">
           <h2 id="h-con" style={{ fontSize: 20 }}>Contact admissions</h2>
           <div className="list">
-            <div><span className="nt"><Icon name="mail" size={18} /></span><div className="grow"><strong>Email</strong><div><a href={'mailto:' + site.email}>{site.email}</a></div></div></div>
-            <div><span className="nt"><Icon name="phone" size={18} /></span><div className="grow"><strong>Phone</strong><div className="muted">{site.phone}</div></div></div>
-            <div><span className="nt"><Icon name="home" size={18} /></span><div className="grow"><strong>Office</strong><div className="muted">{site.city}</div></div></div>
+            {site.email && <div><span className="nt"><Icon name="mail" size={18} /></span><div className="grow"><strong>Email</strong><div><a href={'mailto:' + site.email}>{site.email}</a></div></div></div>}
+            {site.phone && <div><span className="nt"><Icon name="phone" size={18} /></span><div className="grow"><strong>Phone</strong><div className="muted">{site.phone}</div></div></div>}
+            {site.city && <div><span className="nt"><Icon name="home" size={18} /></span><div className="grow"><strong>Office</strong><div className="muted">{site.city}</div></div></div>}
           </div>
           <p className="muted small" style={{ margin: '14px 0 0' }}>When you write, include your full name and the email you registered with.</p>
-          <p style={{ margin: '14px 0 0' }}><a className="btn" href={'mailto:' + site.email + '?subject=Support request'}><Icon name="mail" size={18} /> Write to us</a></p>
+          {site.email && <p style={{ margin: '14px 0 0' }}><a className="btn" href={'mailto:' + site.email + '?subject=Support request'}><Icon name="mail" size={18} /> Write to us</a></p>}
         </aside>
       </div>
     </>

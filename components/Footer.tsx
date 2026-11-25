@@ -15,7 +15,7 @@ export default function Footer() {
             </span>
           </Link>
           <p>A technology-focused online institute offering certificates, diplomas and degrees in Information Technology, Cyber Security and Satellite Systems.</p>
-          <p className="sf-status">Recognition: {site.accreditation}</p>
+          {site.accreditation && <p className="sf-status">Recognition: {site.accreditation}</p>}
         </div>
 
         <nav aria-label="Explore">
@@ -50,15 +50,16 @@ export default function Footer() {
         <div>
           <h2>Contact</h2>
           <ul className="sf-contact">
-            <li><a href={'mailto:' + site.email}>{site.email}</a></li>
-            <li>{site.phone}</li>
-            <li>{site.city}</li>
+            {site.email && <li><a href={'mailto:' + site.email}>{site.email}</a></li>}
+            {site.phone && <li>{site.phone}</li>}
+            {site.city && <li>{site.city}</li>}
+            {!site.email && <li><Link href="/contact">Contact us</Link></li>}
           </ul>
         </div>
       </div>
       <div className="container sf-fine">
         <p>
-          &copy; {new Date().getFullYear()} {site.name}. {site.disclaimer}
+          &copy; {new Date().getFullYear()} {site.name}.{site.disclaimer ? ' ' + site.disclaimer : ''}
         </p>
         <nav aria-label="Legal">
           <Link href="/legal#privacy">Privacy policy</Link>

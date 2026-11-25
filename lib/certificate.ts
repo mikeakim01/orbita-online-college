@@ -203,9 +203,9 @@ export async function buildCertificate(c: CertificateData, brand: Brand = siteBr
     return d;
   };
   const sig = (name: string, title: string, yy: number, style: number) => {
-    page.drawSvgPath(scribble(name, style), { x: style === 0 ? 335 : 350, y: yy + (style === 0 ? 22 : 12), borderColor: hex(ink), borderWidth: style === 0 ? 1.5 : 1.1, borderOpacity: 0.92 });
+    if (name) page.drawSvgPath(scribble(name, style), { x: style === 0 ? 335 : 350, y: yy + (style === 0 ? 22 : 12), borderColor: hex(ink), borderWidth: style === 0 ? 1.5 : 1.1, borderOpacity: 0.92 });
     page.drawLine({ start: { x: 320, y: yy }, end: { x: 520, y: yy }, thickness: 0.8, color: hex(ink) });
-    const pn = safe(name + ', ' + title);
+    const pn = safe(name ? name + ', ' + title : title);
     page.drawText(pn, { x: 420 - ital.widthOfTextAtSize(pn, 11) / 2, y: yy - 14, size: 11, font: ital, color: hex(brand.muted) });
   };
   sig(brand.signatory.name, brand.signatory.title, 214, 0);
@@ -218,7 +218,7 @@ export async function buildCertificate(c: CertificateData, brand: Brand = siteBr
   center('Certificate ID ' + c.serial, 54, 8.5, reg, brand.muted);
   const vu = safe(c.verifyUrl.replace(/^https?:\/\//, ''));
   center('Verify at ' + (vu.length > 70 ? vu.slice(0, 70) + '...' : vu), 43, 8, reg, brand.muted);
-  center(brand.disclaimer, 30, 7, reg, brand.muted);
+  if (brand.disclaimer) center(brand.disclaimer, 30, 7, reg, brand.muted);
 
   if (opts.sample) {
     const t = 'SAMPLE';

@@ -47,7 +47,7 @@ export default function About() {
                 ['book', 'Clear pathways', 'Start with a certificate course and continue to a diploma, Bachelor, Master or PhD in the same faculty.'],
                 ['shield', 'Fair assessment', 'Online exams are timed, graded on the server and limited to a fixed number of attempts.'],
                 ['award', 'Credentials you can verify', 'Each certificate carries a unique ID and a public verification page.'],
-                ['satellite', 'Technology and innovation', 'Our Satellite Systems faculty includes a remote ground-station lab.'],
+                ['satellite', 'Technology and innovation', 'Our Satellite Systems faculty teaches orbits, communications and ground operations.'],
                 ['users', 'Open to adult learners', 'Entry requirements are listed for every level, and the short courses need no prior study.'],
               ].map(([ic, t, d]) => (
                 <div className="feat" key={t}>
@@ -77,23 +77,28 @@ export default function About() {
         </div>
       </section>
 
-      <section className="band alt">
-        <div className="container two-col">
-          <Reveal className="prose2">
-            <h2>Recognition and accreditation</h2>
-            <p>Current status: {site.accreditation.charAt(0).toUpperCase() + site.accreditation.slice(1)}</p>
-            <p>We do not claim accreditation, registration or degree-awarding authority that we do not hold. Please read this status before you apply, and contact admissions if you need a recognition letter for an employer or another institution.</p>
-            <p className="muted small">{site.disclaimer}</p>
-          </Reveal>
-          <Reveal delay={100}>
-            <div style={{ display: 'grid', gap: 14 }}>
-              <h2 style={{ fontSize: 20, margin: 0 }}>Institute officers</h2>
-              <div className="officer"><b>{site.signatory.name}</b><span className="muted">{site.signatory.title}</span></div>
-              <div className="officer"><b>{site.registrar.name}</b><span className="muted">{site.registrar.title}</span></div>
-            </div>
-          </Reveal>
-        </div>
-      </section>
+      {(site.accreditation || site.signatory.name || site.registrar.name) && (
+        <section className="band alt">
+          <div className="container two-col">
+            {site.accreditation && (
+              <Reveal className="prose2">
+                <h2>Recognition and accreditation</h2>
+                <p>{site.accreditation.charAt(0).toUpperCase() + site.accreditation.slice(1)}</p>
+                <p>Please read this status before you apply, and contact admissions if you need a recognition letter for an employer or another institution.</p>
+              </Reveal>
+            )}
+            {(site.signatory.name || site.registrar.name) && (
+              <Reveal delay={100}>
+                <div style={{ display: 'grid', gap: 14 }}>
+                  <h2 style={{ fontSize: 20, margin: 0 }}>Institute officers</h2>
+                  {site.signatory.name && <div className="officer"><b>{site.signatory.name}</b><span className="muted">{site.signatory.title}</span></div>}
+                  {site.registrar.name && <div className="officer"><b>{site.registrar.name}</b><span className="muted">{site.registrar.title}</span></div>}
+                </div>
+              </Reveal>
+            )}
+          </div>
+        </section>
+      )}
     </>
   );
 }

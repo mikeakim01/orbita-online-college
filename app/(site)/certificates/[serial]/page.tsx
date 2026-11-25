@@ -44,7 +44,7 @@ export default async function Verify({ params }: { params: { serial: string } })
               </a>
             </p>
           )}
-          <p className="muted small" style={{ margin: 0 }}>{site.disclaimer}</p>
+          {site.disclaimer && <p className="muted small" style={{ margin: 0 }}>{site.disclaimer}</p>}
         </div>
       )}
     </div>

@@ -21,17 +21,17 @@ export const site: {
   "prefix": "ORB",
   "country": "Russia",
   "law": "the laws of the Russian Federation",
-  "email": "admissions@orbita.example",
-  "phone": "+7 495 000 00 00",
-  "city": "Moscow, Russia",
-  "accreditation": "application in progress. Not yet accredited.",
+  "email": "",
+  "phone": "",
+  "city": "",
+  "accreditation": "",
   "intake": "February 2027",
   "appFee": "$50",
-  "disclaimer": "A fictional institution created for demonstration. Not affiliated with any existing university.",
+  "disclaimer": "",
   "hero": {
     "kicker": "IT · CYBER SECURITY · SATELLITE SYSTEMS",
     "title": "Learn the systems that run the orbit.",
-    "text": "Online certificates, diplomas, Bachelor, Master and PhD programs in Information Technology, Cyber Security and Satellite Systems, with a remote ground-station lab."
+    "text": "Online certificates, diplomas, Bachelor, Master and PhD programs in Information Technology, Cyber Security and Satellite Systems."
   },
   "programsHeading": "Three faculties. One institute.",
   "programsIntro": "Three faculties, each available from short certificate courses and diplomas up to Bachelor, Master and PhD level. Modules below are the core of each degree.",
@@ -460,7 +460,7 @@ export const site: {
       "prerequisite": "Mid-level course or two years of work experience"
     }
   ],
-  "feeNote": "Fees are indicative benchmarks drawn from published tuition at Russian technical universities. Final fees are confirmed in your offer letter.",
+  "feeNote": "Final fees are confirmed in your offer letter.",
   "faq": [
     {
       "q": "How is tuition charged?",
@@ -484,11 +484,11 @@ export const site: {
     }
   ],
   "signatory": {
-    "name": "I. Sokolov",
+    "name": "",
     "title": "Rector"
   },
   "registrar": {
-    "name": "M. Volkova",
+    "name": "",
     "title": "Registrar"
   },
   "cert": {
@@ -499,3 +499,11 @@ export const site: {
     "line": "#24325A"
   }
 };
+
+// Production details. Set these in the Vercel project's environment variables; sections that need them stay hidden until set.
+site.email = process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? '';
+site.phone = process.env.NEXT_PUBLIC_CONTACT_PHONE ?? '';
+site.city = process.env.NEXT_PUBLIC_CONTACT_ADDRESS ?? '';
+site.accreditation = process.env.NEXT_PUBLIC_ACCREDITATION ?? '';
+site.signatory.name = process.env.NEXT_PUBLIC_RECTOR_NAME ?? '';
+site.registrar.name = process.env.NEXT_PUBLIC_REGISTRAR_NAME ?? '';

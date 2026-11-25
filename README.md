@@ -5,9 +5,12 @@ online exams that grade on the server, and certificates with a public verificati
 
 Built with Next.js 14 (App Router, TypeScript) and Supabase (Postgres and login). Hosted on Vercel.
 
-> This is a fictional institution made for demonstration. Before real use, replace the names, contact
-> details, fees, accreditation text, legal pages and exam questions in `lib/site.ts`, `app/legal/page.tsx`
-> and `supabase/seed.sql`, and have a lawyer review the legal text.
+> **Before launch**, set these Vercel environment variables (sections stay hidden until set):
+> `NEXT_PUBLIC_CONTACT_EMAIL`, `NEXT_PUBLIC_CONTACT_PHONE`, `NEXT_PUBLIC_CONTACT_ADDRESS`,
+> `NEXT_PUBLIC_ACCREDITATION` (only if you hold real recognition), `NEXT_PUBLIC_RECTOR_NAME`,
+> `NEXT_PUBLIC_REGISTRAR_NAME` (names printed on certificates), and `NEXT_PUBLIC_SITE_URL`.
+> Review fees, policies and the legal pages in `lib/site.ts` and `app/(site)/legal/page.tsx`
+> with a lawyer, and review the exam questions in `supabase/seed.sql`.
 
 ## What works
 

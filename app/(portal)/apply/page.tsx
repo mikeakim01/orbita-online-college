@@ -47,7 +47,7 @@ export default function Apply({ searchParams }: { searchParams: { program?: stri
             </details>
           ))}
           <p style={{ margin: '14px 0 0' }}>
-            Still unsure? Write to <a href={'mailto:' + site.email}>{site.email}</a>.
+            Still unsure? {site.email ? <>Write to <a href={'mailto:' + site.email}>{site.email}</a>.</> : <>Read the <a href="/admissions#faq">admissions FAQ</a>.</>}
           </p>
         </section>
       </div>

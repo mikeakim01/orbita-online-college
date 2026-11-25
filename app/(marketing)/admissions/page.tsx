@@ -87,7 +87,7 @@ export default function Admissions() {
         <div className="container">
           <Reveal><SectionHeading kicker="Questions" title="Frequently asked questions" /></Reveal>
           <Reveal><FAQ items={site.faq} /></Reveal>
-          <p style={{ marginTop: 26 }}>Still unsure? Write to <a href={'mailto:' + site.email}>{site.email}</a> or <Link href="/contact">visit the contact page</Link>.</p>
+          <p style={{ marginTop: 26 }}>Still unsure? <Link href="/contact">Visit the contact page</Link>.</p>
         </div>
       </section>
     </>
