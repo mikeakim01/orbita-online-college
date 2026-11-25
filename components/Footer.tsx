@@ -14,12 +14,15 @@ export default function Footer() {
         </div>
         <nav className="links" aria-label="Footer">
           <Link href="/programs">Programs</Link>
+          <Link href="/help">Help</Link>
           <Link href="/legal#privacy">Privacy</Link>
           <Link href="/legal#terms">Terms</Link>
           <Link href="/legal#cookies">Cookies</Link>
         </nav>
       </div>
-      <div className="container fine">&copy; {new Date().getFullYear()} {site.name}. {site.disclaimer}</div>
+      <div className="container fine">
+        &copy; {new Date().getFullYear()} {site.name}. {site.disclaimer}
+      </div>
     </footer>
   );
 }

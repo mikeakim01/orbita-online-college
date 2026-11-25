@@ -97,8 +97,8 @@ export async function submitApplication(_: FormState, f: FormData): Promise<Form
   if (existing && existing.length) return { error: 'You already have an active application for this program and level.' };
   const { data: created, error } = await supabase.from('applications').insert({ user_id: user.id, program, level, statement }).select('id').single();
   if (error || !created) return { error: 'We could not save your application. Please try again.' };
-  if ((site.docRules?.[level] ?? []).length) redirect('/documents/' + created.id + '?applied=1');
-  redirect('/dashboard?applied=1');
+  if ((site.docRules?.[level] ?? []).length) redirect('/documents/' + created.id + '?toast=applied');
+  redirect('/dashboard?toast=applied');
 }
 
 async function requireAdmin() {
@@ -125,7 +125,7 @@ export async function setApplicationStatus(f: FormData) {
     if (required.length) {
       const { data: have } = await adminDb.from('application_documents').select('doc_type').eq('application_id', id);
       const got = new Set((have ?? []).map((d) => d.doc_type));
-      if (required.some((s) => !got.has(s.key))) redirect('/admin?blocked=' + encodeURIComponent(id));
+      if (required.some((s) => !got.has(s.key))) redirect('/admin/applications?blocked=' + encodeURIComponent(id));
     }
   }
   await adminDb.from('applications').update({ status }).eq('id', id);

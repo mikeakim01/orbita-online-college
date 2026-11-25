@@ -10,13 +10,15 @@ export type Field = {
   options?: string[];
   hint?: string;
   required?: boolean;
+  defaultValue?: string;
+  readOnly?: boolean;
 };
 
 function Submit({ label }: { label: string }) {
   const { pending } = useFormStatus();
   return (
     <button className="btn" type="submit" disabled={pending}>
-      {pending ? 'Please wait...' : label}
+      {pending ? <span className="spin" aria-hidden="true" /> : null}{pending ? 'Please wait...' : label}
     </button>
   );
 }
@@ -66,6 +68,8 @@ export default function AuthForm({
                 name={f.name}
                 type={f.type ?? 'text'}
                 autoComplete={f.autoComplete}
+                defaultValue={f.defaultValue}
+                readOnly={f.readOnly}
                 aria-describedby={f.hint ? id + '-hint' : undefined}
               />
             )}

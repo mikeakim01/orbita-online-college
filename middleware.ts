@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
-const PROTECTED = ['/dashboard', '/apply', '/exams', '/admin', '/documents'];
+const PROTECTED = ['/dashboard', '/apply', '/exams', '/admin', '/documents', '/applications', '/profile', '/settings', '/help', '/notifications'];
 
 export async function middleware(req: NextRequest) {
   let res = NextResponse.next({ request: req });
@@ -25,7 +25,7 @@ export async function middleware(req: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
   const p = req.nextUrl.pathname;
-  if (!user && PROTECTED.some((x) => p === x || p.startsWith(x + '/'))) {
+  if (!user && PROTECTED.some((x) => p === x || p.startsWith(x + '/')) || p === '/certificates') {
     const url = req.nextUrl.clone();
     url.pathname = '/login';
     url.search = '';
