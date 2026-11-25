@@ -167,12 +167,38 @@ export async function buildCertificate(c: CertificateData, brand: Brand = siteBr
   page.drawText(yr, { x: sx - reg.widthOfTextAtSize(yr, 8) / 2, y: sy - 11, size: 8, font: reg, color: hex(PAPER) });
 
   // Signatures, bottom right
+  // Handwritten-style signature: a deterministic pen stroke derived from the name
+  const scribble = (name: string) => {
+    const s = name.replace(/[^A-Za-z]/g, '');
+    let seed = 2166136261;
+    for (const ch of name) seed = Math.imul(seed ^ ch.charCodeAt(0), 16777619) >>> 0;
+    const rnd = () => { seed = (seed + 0x6d2b79f5) >>> 0; let z = Math.imul(seed ^ (seed >>> 15), 1 | seed); z = (z + Math.imul(z ^ (z >>> 7), 61 | z)) ^ z; return ((z ^ (z >>> 14)) >>> 0) / 4294967296; };
+    const n = s.length;
+    const step = 150 / Math.max(n, 1);
+    let x = 0;
+    const lead = 14 + rnd() * 14;
+    let d = 'M0,0 C-8,' + (-lead) + ' ' + (lead * 0.6) + ',' + (-lead - 14) + ' 22,' + (-lead * 0.6) + ' C30,-6 8,6 18,-2';
+    x = 22;
+    for (let i = 1; i < n; i++) {
+      const up = 8 + rnd() * 22;
+      const tall = /[A-Z]/.test(s[i]) || /[bdfhklt]/.test(s[i]);
+      const h = tall ? up + 10 : up * 0.6;
+      const nx = x + step;
+      const wob = (rnd() - 0.5) * 6;
+      d += ' C' + (x + step * 0.25) + ',' + (-h) + ' ' + (x + step * 0.55) + ',' + (-h + 4) + ' ' + (x + step * 0.6) + ',' + wob;
+      d += ' S' + (nx - 2) + ',' + (2 + rnd() * 4) + ' ' + nx + ',' + (-2 + wob);
+      x = nx;
+    }
+    d += ' C' + (x + 14) + ',-6 ' + (x + 26) + ',2 ' + (x + 34) + ',-4';
+    d += ' M' + (x + 34) + ',-4 C' + (x * 0.6) + ',8 ' + (x * 0.3) + ',6 4,10';
+    return d;
+  };
   const sig = (name: string, title: string, yy: number) => {
-    const sn = safe(name);
-    page.drawText(sn, { x: 400 - ital.widthOfTextAtSize(sn, 24) / 2 + 20, y: yy + 6, size: 24, font: ital, color: hex(ink) });
+    const ink2 = ink;
+    page.drawSvgPath(scribble(name), { x: 340, y: yy + 22, borderColor: hex(ink2), borderWidth: 1.4, borderOpacity: 0.92 });
     page.drawLine({ start: { x: 320, y: yy }, end: { x: 520, y: yy }, thickness: 0.8, color: hex(ink) });
-    const st = safe(title);
-    page.drawText(st, { x: 420 - ital.widthOfTextAtSize(st, 11) / 2, y: yy - 14, size: 11, font: ital, color: hex(brand.muted) });
+    const pn = safe(name + ', ' + title);
+    page.drawText(pn, { x: 420 - ital.widthOfTextAtSize(pn, 11) / 2, y: yy - 14, size: 11, font: ital, color: hex(brand.muted) });
   };
   sig(brand.signatory.name, brand.signatory.title, 214);
   sig(brand.registrar.name, brand.registrar.title, 150);
