@@ -377,6 +377,87 @@ export const site: {
       "fee": 1300,
       "blurb": "Process satellite imagery at scale into maps and analytics products.",
       "prerequisite": "Mid-level course or two years of work experience"
+    },
+    {
+      "tier": "Entry",
+      "faculty": "it",
+      "name": "Blockchain and Cryptocurrency Basics",
+      "weeks": 6,
+      "fee": 190,
+      "blurb": "How blockchains, wallets and digital currencies work, and how to hold them safely.",
+      "prerequisite": "None"
+    },
+    {
+      "tier": "Entry",
+      "faculty": "it",
+      "name": "Computer Networking Essentials",
+      "weeks": 8,
+      "fee": 210,
+      "blurb": "Addresses, switches, routers and Wi-Fi: build and troubleshoot a small network.",
+      "prerequisite": "None"
+    },
+    {
+      "tier": "Entry",
+      "faculty": "it",
+      "name": "Cloud Computing Essentials",
+      "weeks": 6,
+      "fee": 200,
+      "blurb": "What the cloud is, the main service types and how to launch your first server.",
+      "prerequisite": "None"
+    },
+    {
+      "tier": "Mid",
+      "faculty": "it",
+      "name": "Smart Contracts and Blockchain Development",
+      "weeks": 12,
+      "fee": 650,
+      "blurb": "Write, test and deploy smart contracts and build apps that talk to a blockchain.",
+      "prerequisite": "Entry-level course or equivalent experience"
+    },
+    {
+      "tier": "Mid",
+      "faculty": "it",
+      "name": "Routing, Switching and Network Design",
+      "weeks": 12,
+      "fee": 620,
+      "blurb": "VLANs, dynamic routing and designing reliable networks for offices and campuses.",
+      "prerequisite": "Entry-level course or equivalent experience"
+    },
+    {
+      "tier": "Mid",
+      "faculty": "it",
+      "name": "Cloud Architecture and Containers",
+      "weeks": 12,
+      "fee": 640,
+      "blurb": "Containers, load balancing, storage and designing cloud systems that scale.",
+      "prerequisite": "Entry-level course or equivalent experience"
+    },
+    {
+      "tier": "Pro",
+      "faculty": "it",
+      "name": "Blockchain Security and Digital-Asset Custody",
+      "weeks": 16,
+      "fee": 1350,
+      "blurb": "Audit smart contracts, secure keys and run custody for digital assets.",
+      "prerequisite": "Mid-level course or two years of work experience"
+    },
+    {
+      "tier": "Pro",
+      "faculty": "it",
+      "name": "Enterprise and Carrier Network Engineering",
+      "weeks": 16,
+      "fee": 1300,
+      "blurb": "Design, automate and secure large provider and enterprise networks.",
+      "prerequisite": "Mid-level course or two years of work experience"
+    },
+    {
+      "tier": "Pro",
+      "faculty": "it",
+      "name": "Multi-Cloud Architecture and Cloud Security",
+      "weeks": 16,
+      "fee": 1400,
+      "blurb": "Architect across several clouds with identity, cost control and compliance built in.",
+      "prerequisite": "Mid-level course or two years of work experience"
     }
   ],
   "feeNote": "Fees are indicative benchmarks drawn from published tuition at Russian technical universities. Final fees are confirmed in your offer letter.",
