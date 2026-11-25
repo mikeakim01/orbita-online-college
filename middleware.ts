@@ -25,7 +25,7 @@ export async function middleware(req: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
   const p = req.nextUrl.pathname;
-  if (!user && PROTECTED.some((x) => p === x || p.startsWith(x + '/')) || p === '/certificates') {
+  if (!user && (PROTECTED.some((x) => p === x || p.startsWith(x + '/')) || p === '/certificates')) {
     const url = req.nextUrl.clone();
     url.pathname = '/login';
     url.search = '';
