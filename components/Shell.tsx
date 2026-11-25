@@ -103,12 +103,12 @@ export default function Shell({
           <button className="iconbtn menu-btn" onClick={() => setOpen((o) => !o)} aria-label="Open menu" aria-expanded={open} aria-controls="sidebar">
             <Icon name={open ? 'close' : 'menu'} />
           </button>
-          <form className="search" action="/programs" role="search">
+          <form className="search" action="/courses" role="search">
             <Icon name="search" className="ico-in" />
             <label htmlFor="gs" className="sr-only">
-              Search programs and courses
+              Search courses
             </label>
-            <input id="gs" name="q" type="search" placeholder="Search programs and courses..." />
+            <input id="gs" name="q" type="search" placeholder="Search courses..." />
           </form>
           <div className="spacer" />
           <ThemeToggle />
