@@ -439,3 +439,42 @@ dialog::backdrop { background: rgba(2, 6, 23, 0.7); backdrop-filter: blur(3px); 
 .datefix-form fieldset { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 8px !important; }
 .datefix-form input { min-height: 40px; width: auto; }
 .grant > summary { justify-content: flex-start; } .grant > summary::after { margin-left: auto; }
+
+/* Apply wizard */
+.wiz { max-width: 920px; display: grid; gap: 22px; }
+.wiz-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.wiz-steps li { border-top: 4px solid var(--line2); padding-top: 8px; }
+.wiz-steps li.done { border-color: var(--ok); }
+.wiz-steps li.now { border-color: var(--violet); }
+.wiz-steps button { all: unset; display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 600; font-size: 14px; color: var(--muted); }
+.wiz-steps button:disabled { cursor: default; }
+.wiz-steps li.now button { color: var(--text); }
+.wiz-steps .n { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; background: var(--surface3); color: var(--text); flex: none; }
+.wiz-steps li.now .n { background: var(--grad); color: #fff; }
+.wiz-steps li.done .n { background: var(--ok); color: #fff; }
+@media (max-width: 560px) { .wiz-steps .t { display: none; } .wiz-steps li.now .t { display: inline; } }
+.wiz-pane { display: grid; gap: 26px; min-height: 280px; }
+.wiz-pane h2 { font-size: 22px; margin: 0 0 14px; }
+.pickset { border: 0; padding: 0; margin: 0; min-width: 0; }
+.pickset legend { padding: 0; }
+.pick-grid { display: grid; gap: 14px; }
+.pick-grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.pick-grid.levels { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+@media (max-width: 800px) { .pick-grid.three { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 520px) { .pick-grid.three { grid-template-columns: 1fr; } }
+.pick { position: relative; display: grid; gap: 8px; align-content: start; padding: 14px; border: 2px solid var(--line); border-radius: var(--r); background: var(--panel); cursor: pointer; transition: border-color .15s, transform .15s, box-shadow .15s; }
+.pick.tight { padding: 16px; }
+.pick:hover { border-color: var(--line3); transform: translateY(-2px); }
+.pick:focus-within { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.pick.on { border-color: var(--violet); box-shadow: var(--glow); }
+.pick input { position: absolute; opacity: 0; pointer-events: none; }
+.pick .pic { display: block; aspect-ratio: 5 / 3; border-radius: 10px; overflow: hidden; }
+.pick .pic.short { aspect-ratio: 5 / 2.4; }
+.pick .pt { font-family: var(--font-head); font-weight: 700; line-height: 1.25; }
+.pick .tick { position: absolute; top: 10px; right: 10px; width: 26px; height: 26px; border-radius: 50%; background: var(--grad); color: #fff; display: none; place-items: center; }
+.pick.on .tick { display: grid; }
+.wiz-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.review .facts { margin: 8px 0 16px; }
+.quote { border-left: 3px solid var(--violet); padding: 6px 14px; color: var(--text2); white-space: pre-wrap; }
+.wiz-bar { position: sticky; bottom: 0; z-index: 10; display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap; padding: 14px 18px; border: 1px solid var(--line2); border-radius: var(--r); background: var(--nav-bg); backdrop-filter: blur(12px); box-shadow: var(--shadow); }
+.wiz-bar .sel { margin: 0; min-width: 0; flex: 1 1 240px; }

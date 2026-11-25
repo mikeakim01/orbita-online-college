@@ -4,13 +4,6 @@ import { site } from '@/lib/site';
 
 export const metadata = { title: 'Apply', description: 'Apply to ' + site.name + ': steps, requirements and fees.' };
 
-const STEPS = [
-  ['Choose a program', 'Pick your faculty and level in the form.'],
-  ['Send your application', 'Tell us why you want to study it. It takes a few minutes.'],
-  ['Upload documents', 'The next screen asks for the files your level needs.'],
-  ['Admissions review', 'You can follow the decision on your dashboard.'],
-];
-
 const DOCS = [
   'A valid passport or national ID',
   'Your highest qualification certificate and transcript',
@@ -32,19 +25,6 @@ export default function Apply({ searchParams }: { searchParams: { program?: stri
       </div>
 
       <ApplyForm initialProgram={searchParams.program} initialLevel={searchParams.level} initialCourse={searchParams.course} />
-
-      <section aria-labelledby="h-how">
-        <h2 id="h-how">How it works</h2>
-        <ol className="steps">
-          {STEPS.map(([t, d], i) => (
-            <li key={t}>
-              <span className="num" aria-hidden="true">{i + 1}</span>
-              <h3>{t}</h3>
-              <p className="muted" style={{ margin: 0 }}>{d}</p>
-            </li>
-          ))}
-        </ol>
-      </section>
 
       <div className="two">
         <section className="card">
