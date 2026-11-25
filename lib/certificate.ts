@@ -167,41 +167,49 @@ export async function buildCertificate(c: CertificateData, brand: Brand = siteBr
   page.drawText(yr, { x: sx - reg.widthOfTextAtSize(yr, 8) / 2, y: sy - 11, size: 8, font: reg, color: hex(PAPER) });
 
   // Signatures, bottom right
-  // Handwritten-style signature: a deterministic pen stroke derived from the name
-  const scribble = (name: string) => {
+  // Handwritten-style signatures: two deliberately different pen styles
+  const scribble = (name: string, style: number) => {
     const s = name.replace(/[^A-Za-z]/g, '');
     let seed = 2166136261;
     for (const ch of name) seed = Math.imul(seed ^ ch.charCodeAt(0), 16777619) >>> 0;
     const rnd = () => { seed = (seed + 0x6d2b79f5) >>> 0; let z = Math.imul(seed ^ (seed >>> 15), 1 | seed); z = (z + Math.imul(z ^ (z >>> 7), 61 | z)) ^ z; return ((z ^ (z >>> 14)) >>> 0) / 4294967296; };
     const n = s.length;
-    const step = 150 / Math.max(n, 1);
-    let x = 0;
-    const lead = 14 + rnd() * 14;
-    let d = 'M0,0 C-8,' + (-lead) + ' ' + (lead * 0.6) + ',' + (-lead - 14) + ' 22,' + (-lead * 0.6) + ' C30,-6 8,6 18,-2';
-    x = 22;
-    for (let i = 1; i < n; i++) {
-      const up = 8 + rnd() * 22;
-      const tall = /[A-Z]/.test(s[i]) || /[bdfhklt]/.test(s[i]);
-      const h = tall ? up + 10 : up * 0.6;
-      const nx = x + step;
-      const wob = (rnd() - 0.5) * 6;
-      d += ' C' + (x + step * 0.25) + ',' + (-h) + ' ' + (x + step * 0.55) + ',' + (-h + 4) + ' ' + (x + step * 0.6) + ',' + wob;
-      d += ' S' + (nx - 2) + ',' + (2 + rnd() * 4) + ' ' + nx + ',' + (-2 + wob);
-      x = nx;
+    if (style === 0) {
+      // Rector: large looping initial, tall upright strokes, long swooping underline
+      const step = 118 / Math.max(n, 1);
+      let d = 'M4,4 C-18,-6 -6,-44 14,-40 C34,-36 20,-2 6,6 C26,-10 44,-30 46,-8';
+      let x = 46;
+      for (let i = 1; i < n; i++) {
+        const h = 14 + rnd() * 26;
+        d += ' C' + (x + step * 0.2) + ',' + (-h) + ' ' + (x + step * 0.45) + ',' + (-h * 0.3) + ' ' + (x + step * 0.5) + ',-4 C' + (x + step * 0.7) + ',6 ' + (x + step * 0.9) + ',-2 ' + (x + step) + ',-6';
+        x += step;
+      }
+      d += ' C' + (x + 20) + ',-12 ' + (x + 34) + ',-4 ' + (x + 30) + ',4';
+      d += ' M' + (x + 30) + ',4 C' + (x * 0.7) + ',16 ' + (x * 0.3) + ',12 -4,14';
+      return d;
     }
-    d += ' C' + (x + 14) + ',-6 ' + (x + 26) + ',2 ' + (x + 34) + ',-4';
-    d += ' M' + (x + 34) + ',-4 C' + (x * 0.6) + ',8 ' + (x * 0.3) + ',6 4,10';
+    // Registrar: compact, slanted, rounded cursive with a looped tail and a dot
+    const step = 92 / Math.max(n, 1);
+    let d = 'M0,2 C6,-24 22,-30 26,-14 C30,2 14,4 18,-10';
+    let x = 26;
+    for (let i = 1; i < n; i++) {
+      const h = 6 + rnd() * 12;
+      const sl = 8;
+      d += ' C' + (x + sl) + ',' + (-h - 6) + ' ' + (x + sl + 6) + ',' + (-h) + ' ' + (x + step * 0.5) + ',' + (-h * 0.4) + ' S' + (x + step * 0.9) + ',2 ' + (x + step) + ',-3';
+      x += step;
+    }
+    d += ' C' + (x + 18) + ',-14 ' + (x + 30) + ',10 ' + (x + 10) + ',8 C' + (x - 4) + ',6 ' + (x + 8) + ',-6 ' + (x + 24) + ',-2';
+    d += ' M' + (x + 34) + ',-18 L' + (x + 36) + ',-17';
     return d;
   };
-  const sig = (name: string, title: string, yy: number) => {
-    const ink2 = ink;
-    page.drawSvgPath(scribble(name), { x: 340, y: yy + 22, borderColor: hex(ink2), borderWidth: 1.4, borderOpacity: 0.92 });
+  const sig = (name: string, title: string, yy: number, style: number) => {
+    page.drawSvgPath(scribble(name, style), { x: style === 0 ? 335 : 350, y: yy + (style === 0 ? 22 : 12), borderColor: hex(ink), borderWidth: style === 0 ? 1.5 : 1.1, borderOpacity: 0.92 });
     page.drawLine({ start: { x: 320, y: yy }, end: { x: 520, y: yy }, thickness: 0.8, color: hex(ink) });
     const pn = safe(name + ', ' + title);
     page.drawText(pn, { x: 420 - ital.widthOfTextAtSize(pn, 11) / 2, y: yy - 14, size: 11, font: ital, color: hex(brand.muted) });
   };
-  sig(brand.signatory.name, brand.signatory.title, 214);
-  sig(brand.registrar.name, brand.registrar.title, 150);
+  sig(brand.signatory.name, brand.signatory.title, 214, 0);
+  sig(brand.registrar.name, brand.registrar.title, 150, 1);
 
   // Verification
   const qrPng = await QRCode.toBuffer(c.verifyUrl, { margin: 1, width: 240 });
