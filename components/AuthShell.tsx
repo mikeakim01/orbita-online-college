@@ -9,7 +9,7 @@ import { site } from '@/lib/site';
 const POINTS = [
   ['shield', 'Proctored, server-graded exams'],
   ['award', 'Certificates you can verify online'],
-  ['book', 'Certificate, Diploma, Bachelor, Master and PhD'],
+  ['book', 'Bachelor, Master and PhD programs'],
 ];
 
 export default function AuthShell({ title, intro, children }: { title: string; intro?: string; children: ReactNode }) {

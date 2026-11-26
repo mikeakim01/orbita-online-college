@@ -10,7 +10,6 @@ const DOCS = [
   'For Master and PhD: your previous degree certificate',
   'For PhD: a research proposal of one to two pages',
   'Proof of English language ability, if English is not your first language',
-  'For Certificate courses: nothing extra, unless the course lists a prerequisite',
 ];
 
 export default function Apply({ searchParams }: { searchParams: { program?: string; level?: string; course?: string } }) {

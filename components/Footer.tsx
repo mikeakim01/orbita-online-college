@@ -1,59 +1,60 @@
 import Link from 'next/link';
 import { site } from '@/lib/site';
 import Logo from './Logo';
+import { i18n } from '@/lib/i18n';
 
 export default function Footer() {
+  const { t, d } = i18n();
   return (
     <footer className="sf on-dark">
       <div className="container sf-grid">
         <div className="sf-brand">
-          <Link href="/" className="sn-brand" aria-label={site.name + ' home'}>
+          <Link href="/" className="sn-brand" aria-label={site.name + t(' home', ': главная')}>
             <Logo />
             <span>
               <strong>{site.short}</strong>
-              <small>Engineering Institute</small>
+              <small>{t('Engineering Institute', 'Инженерный институт')}</small>
             </span>
           </Link>
-          <p>A technology-focused online institute offering certificates, diplomas and degrees in Information Technology, Cyber Security and Satellite Systems.</p>
-          {site.accreditation && <p className="sf-status">Recognition: {site.accreditation}</p>}
+          <p>{t('A technology-focused online institute offering Bachelor, Master and PhD degrees in Information Technology, Cyber Security and Satellite Systems.', 'Онлайн-институт технологической направленности: бакалавриат, магистратура и аспирантура по информационным технологиям, кибербезопасности и спутниковым системам.')}</p>
+          {site.accreditation && <p className="sf-status">{t('Recognition', 'Признание')}: {site.accreditation}</p>}
         </div>
 
         <nav aria-label="Explore">
-          <h2>Explore</h2>
+          <h2>{t('Explore', 'Разделы')}</h2>
           <ul>
-            <li><Link href="/about">About Us</Link></li>
-            <li><Link href="/programs">Academic Programs</Link></li>
-            <li><Link href="/courses">Short Courses</Link></li>
-            <li><Link href="/contact">Contact</Link></li>
+            <li><Link href="/about">{t('About Us', 'Об институте')}</Link></li>
+            <li><Link href="/programs">{t('Academic Programs', 'Программы')}</Link></li>
+            <li><Link href="/contact">{t('Contact', 'Контакты')}</Link></li>
           </ul>
         </nav>
 
         <nav aria-label="Faculties">
-          <h2>Faculties</h2>
+          <h2>{t('Faculties', 'Факультеты')}</h2>
           <ul>
             {site.programs.map((p) => (
-              <li key={p.slug}><Link href={'/faculties/' + p.slug}>{p.name}</Link></li>
+              <li key={p.slug}><Link href={'/faculties/' + p.slug}>{d(p.name)}</Link></li>
             ))}
           </ul>
         </nav>
 
         <nav aria-label="Admissions and portal">
-          <h2>Admissions</h2>
+          <h2>{t('Admissions', 'Поступление')}</h2>
           <ul>
-            <li><Link href="/admissions">Requirements and process</Link></li>
-            <li><Link href="/admissions#fees">Tuition and fees</Link></li>
-            <li><Link href="/apply">Apply now</Link></li>
-            <li><Link href="/login">Student portal</Link></li>
+            <li><Link href="/admissions">{t('Requirements and process', 'Требования и порядок')}</Link></li>
+            <li><Link href="/admissions#fees">{t('Tuition and fees', 'Стоимость обучения')}</Link></li>
+            <li><Link href="/apply">{t('Apply now', 'Подать заявление')}</Link></li>
+            <li><Link href="/login">{t('Student portal', 'Личный кабинет')}</Link></li>
           </ul>
         </nav>
 
         <div>
-          <h2>Contact</h2>
+          <h2>{t('Contact', 'Контакты')}</h2>
           <ul className="sf-contact">
             {site.email && <li><a href={'mailto:' + site.email}>{site.email}</a></li>}
             {site.phone && <li>{site.phone}</li>}
             {site.city && <li>{site.city}</li>}
-            {!site.email && <li><Link href="/contact">Contact us</Link></li>}
+            {!site.email && <li><Link href="/contact">{t('Contact us', 'Связаться с нами')}</Link></li>}
           </ul>
         </div>
       </div>
@@ -62,9 +63,9 @@ export default function Footer() {
           &copy; {new Date().getFullYear()} {site.name}.{site.disclaimer ? ' ' + site.disclaimer : ''}
         </p>
         <nav aria-label="Legal">
-          <Link href="/legal#privacy">Privacy policy</Link>
-          <Link href="/legal#terms">Terms and conditions</Link>
-          <Link href="/legal#cookies">Cookies</Link>
+          <Link href="/legal#privacy">{t('Privacy policy', 'Политика конфиденциальности')}</Link>
+          <Link href="/legal#terms">{t('Terms and conditions', 'Условия использования')}</Link>
+          <Link href="/legal#cookies">{t('Cookies', 'Файлы cookie')}</Link>
         </nav>
       </div>
     </footer>

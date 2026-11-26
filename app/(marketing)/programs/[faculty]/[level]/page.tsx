@@ -2,12 +2,12 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { site } from '@/lib/site';
-import { categoryOf, courseSlug, courses, facultyBySlug, feeLabel, levelBySlug, levelSlug } from '@/lib/catalog';
+import { facultyBySlug, feeLabel, levelBySlug, levelSlug } from '@/lib/catalog';
+import { curriculum } from '@/lib/curriculum';
+import { i18n } from '@/lib/i18n';
 import PageHeader from '@/components/PageHeader';
 import Reveal from '@/components/Reveal';
-import Scene, { sceneFor } from '@/components/Art';
 import Icon from '@/components/Icon';
-import { curriculum } from '@/lib/curriculum';
 
 type P = { params: { faculty: string; level: string } };
 
@@ -23,28 +23,28 @@ export default function Programme({ params }: P) {
   const f = facultyBySlug(params.faculty);
   const l = levelBySlug(params.level);
   if (!f || !l) notFound();
+  const { t, d } = i18n();
   const docs = site.docRules?.[l.name] ?? [];
-  const isShort = l.name === 'Certificate';
   const plan = curriculum(f.slug, l.name);
-  const related = courses().filter((c) => c.faculty === f.slug);
   const apply = '/apply?program=' + f.slug + '&level=' + encodeURIComponent(l.name);
+  const title = t(l.name + ' in ' + f.name, d(l.name) + ': ' + d(f.name));
   return (
     <>
-      <PageHeader crumbs={[{ label: 'Home', href: '/' }, { label: 'Academic Programs', href: '/programs' }, { label: l.name + ' in ' + f.name }]} kicker={f.name} title={l.name + ' in ' + f.name} lead={f.blurb}>
-        <p style={{ marginTop: 26 }}><Link className="btn gold-solid lg" href={apply}>Apply for this program</Link></p>
+      <PageHeader crumbs={[{ label: t('Home', 'Главная'), href: '/' }, { label: t('Academic Programs', 'Программы'), href: '/programs' }, { label: title }]} kicker={d(f.name)} title={title} lead={d(f.blurb)}>
+        <p style={{ marginTop: 26 }}><Link className="btn gold-solid lg" href={apply}>{t('Apply for this program', 'Подать заявление на программу')}</Link></p>
       </PageHeader>
 
       <section className="band" style={{ paddingBottom: 0 }}>
         <div className="container">
           <dl className="facts2">
-            <div><dt>Qualification</dt><dd>{l.name}</dd></div>
-            <div><dt>Faculty</dt><dd>{f.name}</dd></div>
-            <div><dt>Duration</dt><dd>{l.duration}</dd></div>
-            <div><dt>Tuition</dt><dd>{feeLabel(l.name, f.name)}</dd></div>
-            <div><dt>Entry requirement</dt><dd>{l.entry}</dd></div>
-            <div><dt>Application fee</dt><dd>{site.appFee}</dd></div>
-            <div><dt>Next intake</dt><dd>{site.intake}</dd></div>
-            <div><dt>Study mode</dt><dd>Online</dd></div>
+            <div><dt>{t('Qualification', 'Квалификация')}</dt><dd>{d(l.name)}</dd></div>
+            <div><dt>{t('Faculty', 'Факультет')}</dt><dd>{d(f.name)}</dd></div>
+            <div><dt>{t('Duration', 'Срок обучения')}</dt><dd>{d(l.duration)}</dd></div>
+            <div><dt>{t('Tuition', 'Стоимость')}</dt><dd>{d(feeLabel(l.name, f.name))}</dd></div>
+            <div><dt>{t('Entry requirement', 'Требование для поступления')}</dt><dd>{d(l.entry)}</dd></div>
+            <div><dt>{t('Application fee', 'Регистрационный сбор')}</dt><dd>{site.appFee}</dd></div>
+            <div><dt>{t('Next intake', 'Ближайший набор')}</dt><dd>{d(site.intake)}</dd></div>
+            <div><dt>{t('Study mode', 'Форма обучения')}</dt><dd>{d('Online')}</dd></div>
           </dl>
         </div>
       </section>
@@ -52,73 +52,52 @@ export default function Programme({ params }: P) {
       <section className="band">
         <div className="container two-col">
           <Reveal className="prose2">
-            <h2>Program overview</h2>
-            <p>{f.blurb} This {l.name} program is delivered online and takes {l.duration}.</p>
-            {isShort ? (
+            <h2>{t('Program overview', 'О программе')}</h2>
+            <p>{t(f.blurb + ' This ' + l.name + ' program is delivered online and takes ' + l.duration + '.', d(f.blurb) + ' Программа (' + d(l.name) + ') проходит онлайн, срок обучения — ' + d(l.duration) + '.')}</p>
+            {plan ? (
               <>
-                <h2>Choose your short course</h2>
-                <p>The Certificate level is made up of short courses. Pick one that fits your goals and apply for it directly.</p>
-              </>
-            ) : plan ? (
-              <>
-                <h2>{l.name === 'PhD' ? 'Research timeline' : l.name === 'Bachelor' ? 'What you will study, year by year' : 'What you will study'}</h2>
+                <h2>{l.name === 'PhD' ? t('Research timeline', 'Этапы исследования') : l.name === 'Bachelor' ? t('What you will study, year by year', 'Что вы будете изучать по годам') : t('What you will study', 'Что вы будете изучать')}</h2>
                 <div className="curr">
                   {plan.map((b) => (
                     <div className="curr-block" key={b.title}>
-                      <h3>{b.title}</h3>
-                      <ul>{b.items.map((m) => <li key={m}>{m}</li>)}</ul>
+                      <h3>{d(b.title)}</h3>
+                      <ul>{b.items.map((m) => <li key={m}>{d(m)}</li>)}</ul>
                     </div>
                   ))}
                 </div>
               </>
             ) : (
               <>
-                <h2>Core modules</h2>
-                <p>The faculty core, shared by degree programs in {f.name}:</p>
-                <ul className="checks">{f.modules.map((m) => <li key={m}>{m}</li>)}</ul>
+                <h2>{t('Core modules', 'Основные модули')}</h2>
+                <ul className="checks">{f.modules.map((m) => <li key={m}>{d(m)}</li>)}</ul>
               </>
             )}
-            <h2>Admission requirements</h2>
-            <p><strong>Entry requirement:</strong> {l.entry}</p>
+            <h2>{t('Admission requirements', 'Требования для поступления')}</h2>
+            <p><strong>{t('Entry requirement:', 'Требование:')}</strong> {d(l.entry)}</p>
             {docs.length > 0 && (
               <>
-                <p>Documents you upload after applying:</p>
-                <ul className="checks">{docs.map((d) => <li key={d.key}>{d.label}{d.required ? '' : ' (optional)'}</li>)}</ul>
+                <p>{t('Documents you upload after applying:', 'Документы, которые вы загружаете после подачи заявления:')}</p>
+                <ul className="checks">{docs.map((x) => <li key={x.key}>{d(x.label)}{x.required ? '' : t(' (optional)', ' (по желанию)')}</li>)}</ul>
               </>
             )}
-            <h2>Tuition</h2>
-            <p>{feeLabel(l.name, f.name)}. {site.feeNote}</p>
+            <h2>{t('Tuition', 'Стоимость обучения')}</h2>
+            <p>{d(feeLabel(l.name, f.name))}. {d(site.feeNote)}</p>
           </Reveal>
           <Reveal delay={100}>
             <aside className="aside-card on-dark">
-              <h3>Ready to apply?</h3>
-              <p>The next intake is {site.intake}. Application fee {site.appFee}.</p>
-              <Link className="btn gold-solid lg" href={apply}>Start your application</Link>
-              <Link className="btn on-navy" href={'/faculties/' + f.slug}>About the faculty</Link>
-              <Link className="btn on-navy" href="/admissions">Admissions information</Link>
+              <h3>{t('Ready to apply?', 'Готовы подать заявление?')}</h3>
+              <p>{t('The next intake is ' + site.intake + '. Application fee ' + site.appFee + '.', 'Ближайший набор: ' + d(site.intake) + '. Регистрационный сбор ' + site.appFee + '.')}</p>
+              <Link className="btn gold-solid lg" href={apply}>{t('Start your application', 'Начать заявление')}</Link>
+              <Link className="btn on-navy" href={'/faculties/' + f.slug}>{t('About the faculty', 'О факультете')}</Link>
+              <Link className="btn on-navy" href="/admissions">{t('Admissions information', 'Информация о поступлении')}</Link>
             </aside>
           </Reveal>
         </div>
       </section>
 
-      {isShort && related.length > 0 && (
-        <section className="band alt">
-          <div className="container">
-            <div className="cards four">
-              {related.map((c) => (
-                <Link key={c.name} href={'/courses/' + courseSlug(c)} className="cc">
-                  <div className="img"><Scene kind={sceneFor(c.name, c.faculty)} /></div>
-                  <div className="txt"><span className="cat">{categoryOf(c)} &middot; {c.tier}</span><h3>{c.name}</h3><p>{c.blurb}</p><div className="meta"><span>{c.weeks} weeks</span><span>${c.fee.toLocaleString('en-US')}</span></div></div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
       <section className="band">
         <div className="container">
-          <p className="more"><Link href={'/faculties/' + f.slug} className="more"><Icon name="back" size={16} /> Back to {f.name}</Link></p>
+          <p className="more"><Link href={'/faculties/' + f.slug} className="more"><Icon name="back" size={16} /> {t('Back to ' + f.name, 'Назад: ' + d(f.name))}</Link></p>
         </div>
       </section>
     </>

@@ -19,11 +19,11 @@ export const site: {
   "short": "Icon",
   "native": "",
   "prefix": "ICE",
-  "country": "United Kingdom",
-  "law": "the laws of England and Wales",
+  "country": "Russia",
+  "law": "the laws of the Russian Federation",
   "email": "",
   "phone": "+44 7412 835946",
-  "city": "London, United Kingdom",
+  "city": "Moscow, Russia",
   "accreditation": "",
   "intake": "February 2027",
   "appFee": "$50",
@@ -31,10 +31,10 @@ export const site: {
   "hero": {
     "kicker": "IT · CYBER SECURITY · SATELLITE SYSTEMS",
     "title": "Engineer the systems the world runs on.",
-    "text": "Online certificates, diplomas, Bachelor, Master and PhD programs in Information Technology, Cyber Security and Satellite Systems."
+    "text": "Online Bachelor, Master and PhD programs in Information Technology, Cyber Security and Satellite Systems."
   },
   "programsHeading": "Three faculties. One institute.",
-  "programsIntro": "Three faculties, each available from short certificate courses and diplomas up to Bachelor, Master and PhD level. Modules below are the core of each degree.",
+  "programsIntro": "Three faculties, each offering Bachelor, Master and PhD programs. The modules listed are the core of each degree.",
   "programs": [
     {
       "name": "Information Technology",
@@ -83,26 +83,12 @@ export const site: {
     }
   ],
   "applyLevels": [
-    "Certificate",
-    "Diploma",
     "Bachelor",
     "Master",
     "PhD"
   ],
   "programAccess": {},
   "levels": [
-    {
-      "name": "Certificate",
-      "entry": "None for Entry courses; Mid and Pro courses list their own prerequisites",
-      "duration": "6 to 16 weeks per course",
-      "fee": "$150 to $1,500 per course"
-    },
-    {
-      "name": "Diploma",
-      "entry": "Secondary school certificate",
-      "duration": "2 years",
-      "fee": "$2,400 per year (Satellite Systems $2,900)"
-    },
     {
       "name": "Bachelor",
       "entry": "Secondary school certificate",

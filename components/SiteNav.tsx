@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { site } from '@/lib/site';
+import { makeD, type Lang } from '@/lib/ru';
+import LangToggle from './LangToggle';
 import Logo from './Logo';
 import ThemeToggle from './ThemeToggle';
 import Icon from './Icon';
@@ -10,38 +12,40 @@ import Icon from './Icon';
 type Item = { label: string; href: string; note?: string };
 type Menu = { label: string; href: string; items: Item[] };
 
-const FACULTIES: Menu = {
-  label: 'Faculties',
-  href: '/faculties',
-  items: [...site.programs.map((p) => ({ label: p.name, href: '/faculties/' + p.slug, note: p.blurb })), { label: 'All faculties', href: '/faculties' }],
-};
-const PROGRAMS: Menu = {
-  label: 'Academic Programs',
-  href: '/programs',
-  items: [...site.applyLevels.map((l) => ({ label: l, href: '/programs?level=' + l.toLowerCase(), note: site.levels.find((x) => x.name === l)?.duration })), { label: 'All programs', href: '/programs' }],
-};
-const ADMISSIONS: Menu = {
-  label: 'Admissions',
-  href: '/admissions',
-  items: [
-    { label: 'Requirements and process', href: '/admissions#process' },
-    { label: 'Tuition and fees', href: '/admissions#fees' },
-    { label: 'Frequently asked questions', href: '/admissions#faq' },
-    { label: 'Start your application', href: '/apply' },
-  ],
-};
-const LINKS: (Menu | Item)[] = [
-  { label: 'Home', href: '/' },
-  { label: 'About Us', href: '/about' },
-  FACULTIES,
-  PROGRAMS,
-  { label: 'Short Courses', href: '/courses' },
-  ADMISSIONS,
-  { label: 'Contact', href: '/contact' },
-];
+function buildLinks(lang: Lang): (Menu | Item)[] {
+  const t = (en: string, ru: string) => (lang === 'ru' ? ru : en);
+  const d = makeD(lang);
+  return [
+    { label: t('Home', 'Главная'), href: '/' },
+    { label: t('About Us', 'Об институте'), href: '/about' },
+    {
+      label: t('Faculties', 'Факультеты'),
+      href: '/faculties',
+      items: [...site.programs.map((p) => ({ label: d(p.name), href: '/faculties/' + p.slug, note: d(p.blurb) })), { label: t('All faculties', 'Все факультеты'), href: '/faculties' }],
+    },
+    {
+      label: t('Academic Programs', 'Программы'),
+      href: '/programs',
+      items: [...site.applyLevels.map((l) => ({ label: d(l), href: '/programs?level=' + l.toLowerCase(), note: d(site.levels.find((x) => x.name === l)?.duration ?? '') })), { label: t('All programs', 'Все программы'), href: '/programs' }],
+    },
+    {
+      label: t('Admissions', 'Поступление'),
+      href: '/admissions',
+      items: [
+        { label: t('Requirements and process', 'Требования и порядок'), href: '/admissions#process' },
+        { label: t('Tuition and fees', 'Стоимость обучения'), href: '/admissions#fees' },
+        { label: t('Frequently asked questions', 'Частые вопросы'), href: '/admissions#faq' },
+        { label: t('Start your application', 'Подать заявление'), href: '/apply' },
+      ],
+    },
+    { label: t('Contact', 'Контакты'), href: '/contact' },
+  ];
+}
 const isMenu = (x: Menu | Item): x is Menu => 'items' in x;
 
-export default function SiteNav({ signedIn }: { signedIn: boolean }) {
+export default function SiteNav({ signedIn, lang }: { signedIn: boolean; lang: Lang }) {
+  const t = (en: string, ru: string) => (lang === 'ru' ? ru : en);
+  const LINKS = buildLinks(lang);
   const path = usePathname() ?? '/';
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState<string | null>(null);
@@ -86,15 +90,15 @@ export default function SiteNav({ signedIn }: { signedIn: boolean }) {
   return (
     <header ref={bar} className={'sn' + (overHero ? ' over' : '') + (drawer ? ' drawer-open' : '')}>
       <div className="sn-in">
-        <Link href="/" className="sn-brand" aria-label={site.name + ' home'}>
+        <Link href="/" className="sn-brand" aria-label={site.name + t(' home', ': главная')}>
           <Logo />
           <span>
             <strong>{site.short}</strong>
-            <small>Engineering Institute</small>
+            <small>{t('Engineering Institute', 'Инженерный институт')}</small>
           </span>
         </Link>
 
-        <nav className="sn-links" aria-label="Main">
+        <nav className="sn-links" aria-label={t('Main', 'Основное меню')}>
           {LINKS.map((l) =>
             isMenu(l) ? (
               <div key={l.label} className={'sn-dd' + (open === l.label ? ' open' : '')} onMouseEnter={() => window.matchMedia('(hover: hover)').matches && setOpen(l.label)} onMouseLeave={() => setOpen(null)}>
@@ -121,20 +125,21 @@ export default function SiteNav({ signedIn }: { signedIn: boolean }) {
 
         <div className="sn-actions">
           <ThemeToggle className="iconbtn sn-theme" />
+          <LangToggle lang={lang} className="iconbtn sn-theme langbtn" />
           <Link className="sn-portal" href={signedIn ? '/dashboard' : '/login'}>
-            Student Portal
+            {t('Student Portal', 'Личный кабинет')}
           </Link>
           <Link className="btn gold-solid sm" href="/apply">
-            Apply Now
+            {t('Apply Now', 'Подать заявление')}
           </Link>
-          <button type="button" className="sn-burger" aria-label={drawer ? 'Close menu' : 'Open menu'} aria-expanded={drawer} aria-controls="sn-drawer" onClick={() => setDrawer(!drawer)}>
+          <button type="button" className="sn-burger" aria-label={drawer ? t('Close menu', 'Закрыть меню') : t('Open menu', 'Открыть меню')} aria-expanded={drawer} aria-controls="sn-drawer" onClick={() => setDrawer(!drawer)}>
             <Icon name={drawer ? 'close' : 'menu'} />
           </button>
         </div>
       </div>
 
       <div id="sn-drawer" className="sn-drawer" hidden={!drawer}>
-        <nav aria-label="Mobile">
+        <nav aria-label={t('Mobile', 'Мобильное меню')}>
           {LINKS.map((l) =>
             isMenu(l) ? (
               <details key={l.label}>
@@ -154,10 +159,10 @@ export default function SiteNav({ signedIn }: { signedIn: boolean }) {
         </nav>
         <div className="sn-drawer-cta">
           <Link className="btn ghost" href={signedIn ? '/dashboard' : '/login'}>
-            Student Portal
+            {t('Student Portal', 'Личный кабинет')}
           </Link>
           <Link className="btn gold-solid" href="/apply">
-            Apply Now
+            {t('Apply Now', 'Подать заявление')}
           </Link>
         </div>
       </div>
