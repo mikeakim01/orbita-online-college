@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 
 /**
- * Original illustrations drawn for Orbita (no stock photos, no external files).
+ * Original illustrations drawn for Icon Engineering Institute (no stock photos, no external files).
  * Every scene is a 400x240 SVG so it scales cleanly and works in light and dark mode.
  */
 export type SceneKind = 'it' | 'code' | 'cyber' | 'satellite' | 'crypto' | 'network' | 'cloud' | 'learn';

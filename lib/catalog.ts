@@ -53,4 +53,4 @@ export const programmes = (): Programme[] =>
     site.levels.map((level) => ({ faculty, level, title: level.name + ' in ' + faculty.name, href: '/programs/' + faculty.slug + '/' + levelSlug(level.name) })),
   );
 
-export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://orbita-online-college.vercel.app').replace(/\/$/, '');
+export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://iconeeng.com').replace(/\/$/, '');

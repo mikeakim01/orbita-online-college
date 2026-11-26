@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = { themeColor: [{ media: '(prefers-color-scheme: light)', color: '#f5f7fa' }, { media: '(prefers-color-scheme: dark)', color: '#071426' }], colorScheme: 'light dark' };
 
 // Runs before first paint so there is no flash. Light unless the visitor chose dark.
-const THEME_SCRIPT = "try{var t=localStorage.getItem('orbita-theme');document.documentElement.setAttribute('data-theme',t==='dark'?'dark':'light')}catch(e){document.documentElement.setAttribute('data-theme','light')}";
+const THEME_SCRIPT = "try{var t=localStorage.getItem('icon-theme');document.documentElement.setAttribute('data-theme',t==='dark'?'dark':'light')}catch(e){document.documentElement.setAttribute('data-theme','light')}";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

@@ -76,7 +76,7 @@ export default function Shell({
           <Logo />
           <span>
             {site.short}
-            <small>Online Institute Portal</small>
+            <small>Student Portal</small>
           </span>
         </Link>
         <nav aria-label="Portal">{STUDENT.map(link)}</nav>

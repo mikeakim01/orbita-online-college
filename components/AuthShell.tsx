@@ -20,7 +20,7 @@ export default function AuthShell({ title, intro, children }: { title: string; i
           <Logo />
           <span>
             {site.short}
-            <small>Online Institute</small>
+            <small>Engineering Institute</small>
           </span>
         </Link>
         <div>

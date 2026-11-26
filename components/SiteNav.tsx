@@ -90,7 +90,7 @@ export default function SiteNav({ signedIn }: { signedIn: boolean }) {
           <Logo />
           <span>
             <strong>{site.short}</strong>
-            <small>Online Institute</small>
+            <small>Engineering Institute</small>
           </span>
         </Link>
 

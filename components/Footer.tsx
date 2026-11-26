@@ -11,7 +11,7 @@ export default function Footer() {
             <Logo />
             <span>
               <strong>{site.short}</strong>
-              <small>Online Institute</small>
+              <small>Engineering Institute</small>
             </span>
           </Link>
           <p>A technology-focused online institute offering certificates, diplomas and degrees in Information Technology, Cyber Security and Satellite Systems.</p>

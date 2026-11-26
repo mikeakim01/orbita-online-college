@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import Icon from './Icon';
 
 type Mode = 'light' | 'dark';
-const KEY = 'orbita-theme';
+const KEY = 'icon-theme';
 
 /** Light is the default. The choice is stored in this browser and applied before first paint (see layout.tsx). */
 export default function ThemeToggle({ className = 'iconbtn' }: { className?: string }) {

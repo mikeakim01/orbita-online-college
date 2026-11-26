@@ -15,22 +15,22 @@ export const site: {
   cert: { bg: string; ink: string; accent: string; muted: string; line: string };
 } = {
   "key": "orbita",
-  "name": "Orbita Online Institute",
-  "short": "Orbita",
-  "native": "Онлайн-институт «Орбита»",
-  "prefix": "ORB",
-  "country": "Russia",
-  "law": "the laws of the Russian Federation",
+  "name": "Icon Engineering Institute",
+  "short": "Icon",
+  "native": "",
+  "prefix": "ICE",
+  "country": "United Kingdom",
+  "law": "the laws of England and Wales",
   "email": "",
-  "phone": "",
-  "city": "",
+  "phone": "+44 7412 835946",
+  "city": "London, United Kingdom",
   "accreditation": "",
   "intake": "February 2027",
   "appFee": "$50",
   "disclaimer": "",
   "hero": {
     "kicker": "IT · CYBER SECURITY · SATELLITE SYSTEMS",
-    "title": "Learn the systems that run the orbit.",
+    "title": "Engineer the systems the world runs on.",
     "text": "Online certificates, diplomas, Bachelor, Master and PhD programs in Information Technology, Cyber Security and Satellite Systems."
   },
   "programsHeading": "Three faculties. One institute.",
@@ -39,7 +39,7 @@ export const site: {
     {
       "name": "Information Technology",
       "slug": "it",
-      "native": "ИНФОРМАЦИОННЫЕ ТЕХНОЛОГИИ",
+      "native": "",
       "blurb": "Build, connect and run the software that organizations depend on.",
       "careers": "software engineer, systems architect, cloud engineer, database administrator.",
       "modules": [
@@ -54,7 +54,7 @@ export const site: {
     {
       "name": "Cyber Security",
       "slug": "cyber",
-      "native": "КИБЕРБЕЗОПАСНОСТЬ",
+      "native": "",
       "blurb": "Defend systems and respond when they are attacked.",
       "careers": "security analyst, incident responder, security engineer, penetration tester.",
       "modules": [
@@ -69,7 +69,7 @@ export const site: {
     {
       "name": "Satellite Systems",
       "slug": "satellite",
-      "native": "СПУТНИКОВЫЕ СИСТЕМЫ",
+      "native": "",
       "blurb": "Design, operate and secure satellite links and ground stations.",
       "careers": "ground-segment engineer, RF engineer, mission analyst, Earth-observation data engineer.",
       "modules": [
@@ -484,26 +484,26 @@ export const site: {
     }
   ],
   "signatory": {
-    "name": "",
+    "name": "Steven C. Wales",
     "title": "Rector"
   },
   "registrar": {
-    "name": "",
+    "name": "Jane K. Arthur",
     "title": "Registrar"
   },
   "cert": {
     "bg": "#0A0F1E",
     "ink": "#14203F",
-    "accent": "#D9381E",
+    "accent": "#B8913F",
     "muted": "#5A6685",
     "line": "#24325A"
   }
 };
 
 // Production details. Set these in the Vercel project's environment variables; sections that need them stay hidden until set.
-site.email = process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? '';
-site.phone = process.env.NEXT_PUBLIC_CONTACT_PHONE ?? '';
-site.city = process.env.NEXT_PUBLIC_CONTACT_ADDRESS ?? '';
-site.accreditation = process.env.NEXT_PUBLIC_ACCREDITATION ?? '';
-site.signatory.name = process.env.NEXT_PUBLIC_RECTOR_NAME ?? '';
-site.registrar.name = process.env.NEXT_PUBLIC_REGISTRAR_NAME ?? '';
+site.email = process.env.NEXT_PUBLIC_CONTACT_EMAIL || '';
+site.phone = process.env.NEXT_PUBLIC_CONTACT_PHONE || site.phone;
+site.city = process.env.NEXT_PUBLIC_CONTACT_ADDRESS || site.city;
+site.accreditation = process.env.NEXT_PUBLIC_ACCREDITATION || '';
+site.signatory.name = process.env.NEXT_PUBLIC_RECTOR_NAME || site.signatory.name;
+site.registrar.name = process.env.NEXT_PUBLIC_REGISTRAR_NAME || site.registrar.name;

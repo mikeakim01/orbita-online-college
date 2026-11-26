@@ -1,6 +1,6 @@
-# Orbita Online Institute
+# Icon Engineering Institute
 
-A deployable website for Orbita Online Institute: public pages, student accounts, applications, an admin screen,
+A deployable website for Icon Engineering Institute: public pages, student accounts, applications, an admin screen,
 online exams that grade on the server, and certificates with a public verification page and a PDF download.
 
 Built with Next.js 14 (App Router, TypeScript) and Supabase (Postgres and login). Hosted on Vercel.
@@ -20,7 +20,7 @@ Built with Next.js 14 (App Router, TypeScript) and Supabase (Postgres and login)
 - Admin screen: approve or reject applications, revoke or restore certificates
 - Exams unlock after an application for that program is approved. Answers are graded on the server (the correct
   answers never reach the browser), 3 attempts per exam per 24 hours
-- Passing an exam issues a certificate with an ID like `ORB-2026-123456`, a public verification page at
+- Passing an exam issues a certificate with an ID like `ICE-2026-123456`, a public verification page at
   `/certificates/<ID>` and a PDF with a QR code at `/certificates/<ID>/pdf`
 - Fee calculator, fee table, FAQ, privacy, terms and cookie pages
 

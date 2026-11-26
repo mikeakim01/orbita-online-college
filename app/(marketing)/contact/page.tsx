@@ -5,7 +5,7 @@ import Icon from '@/components/Icon';
 
 export const metadata = {
   title: 'Contact',
-  description: 'Contact the ' + site.name + ' admissions team by email.',
+  description: 'Contact the ' + site.name + ' admissions team.',
   alternates: { canonical: '/contact' },
   openGraph: { title: 'Contact ' + site.name, url: '/contact', type: 'website' as const },
 };
