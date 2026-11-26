@@ -749,3 +749,16 @@ html { scroll-behavior: smooth; scroll-padding-top: calc(var(--nav-h) + 12px); }
 .contact-card h3 { margin: 0; font-size: 17px; }
 .contact-card a, .contact-card span { font-weight: 600; word-break: break-word; }
 .public-main .container { max-width: 1200px; }
+
+/* Exam stage scores */
+.stages { border: 1px solid var(--line); border-radius: var(--r); padding: 14px 16px 6px; margin: 16px 0; }
+.stages legend { padding: 0 6px; font-weight: 600; font-size: 14px; }
+.stage-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; }
+.stage-mini { display: grid; gap: 4px; font-size: 12px; color: var(--muted); }
+.datefix-form { flex-wrap: wrap; }
+.results { text-align: left; margin-top: 22px; }
+.results h2 { font-size: 16px; margin: 0 0 8px; }
+.results table { width: 100%; border-collapse: collapse; }
+.results th, .results td { padding: 10px 12px; border-bottom: 1px solid var(--line); text-align: left; font-weight: 500; }
+.results td { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; }
+.results tr.final th, .results tr.final td { color: var(--gold); font-weight: 800; border-bottom: 0; }

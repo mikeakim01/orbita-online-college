@@ -72,6 +72,7 @@ create table if not exists public.certificates (
   student_name text not null,
   exam_title text not null,
   score int not null,
+  results jsonb,
   issued_at timestamptz not null default now(),
   revoked boolean not null default false
 );

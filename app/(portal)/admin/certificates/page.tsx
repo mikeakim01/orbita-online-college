@@ -7,6 +7,7 @@ import { setCertificateRevoked } from '@/app/actions';
 import { grantCertificate, updateCertificateDate } from '@/app/admin-actions';
 import { people, pageOf, slice } from '@/lib/admin';
 import { day } from '@/lib/portal';
+import { STAGES, readResults } from '@/lib/results';
 
 export const metadata = { title: 'Certificates (admin)' };
 export const dynamic = 'force-dynamic';
@@ -61,8 +62,8 @@ export default async function AdminCertificates({ searchParams }: { searchParams
               <input id="g-title" name="title" maxLength={160} placeholder="Leave empty to use the exam title" />
             </div>
             <div className="field">
-              <label htmlFor="g-score">Score (%)</label>
-              <input id="g-score" name="score" type="number" min={0} max={100} defaultValue={100} required />
+              <label htmlFor="g-score">Overall score (%) <span className="muted small">(optional)</span></label>
+              <input id="g-score" name="score" type="number" min={0} max={100} placeholder="Defaults to the final exam score" />
             </div>
             <div className="field">
               <label htmlFor="g-when">Completion date and time</label>
@@ -70,6 +71,17 @@ export default async function AdminCertificates({ searchParams }: { searchParams
               <small className="muted">Date, year and time, in UTC.</small>
             </div>
           </div>
+          <fieldset className="stages">
+            <legend>Exam scores shown when the QR code is scanned <span className="muted small">(leave a box empty to skip it)</span></legend>
+            <div className="stage-grid">
+              {STAGES.map((s) => (
+                <div className="field" key={s.key}>
+                  <label htmlFor={'g-' + s.key}>{s.label} (%)</label>
+                  <input id={'g-' + s.key} name={'r_' + s.key} type="number" min={0} max={100} inputMode="numeric" />
+                </div>
+              ))}
+            </div>
+          </fieldset>
           <button className="btn" type="submit"><Icon name="award" size={18} /> Grant certificate</button>
         </ActionForm>
       </details>
@@ -98,10 +110,17 @@ export default async function AdminCertificates({ searchParams }: { searchParams
                   <td data-label="Status"><span className={'badge ' + (c.revoked ? 'rejected' : 'approved')}>{c.revoked ? 'revoked' : 'valid'}</span></td>
                   <td className="nolabel">
                     <details className="datefix">
-                      <summary className="btn ghost sm">Edit date</summary>
-                      <ActionForm action={updateCertificateDate} success="Completion date changed" className="datefix-form">
+                      <summary className="btn ghost sm">Edit</summary>
+                      <ActionForm action={updateCertificateDate} success="Certificate updated" className="datefix-form">
                         <input type="hidden" name="id" value={c.id} />
                         <input name="completed" type="datetime-local" max={nowLocal} defaultValue={new Date(c.issued_at).toISOString().slice(0, 16)} required aria-label="Completion date and time" />
+                        <div className="stage-grid">
+                          {STAGES.map((s) => (
+                            <label key={s.key} className="stage-mini">{s.label} (%)
+                              <input name={'r_' + s.key} type="number" min={0} max={100} inputMode="numeric" defaultValue={readResults(c.results).find((r) => r.label === s.label)?.score ?? ''} />
+                            </label>
+                          ))}
+                        </div>
                         <button className="btn sm" type="submit">Save</button>
                       </ActionForm>
                     </details>

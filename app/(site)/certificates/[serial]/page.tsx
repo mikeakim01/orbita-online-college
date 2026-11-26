@@ -1,6 +1,7 @@
 import Icon from '@/components/Icon';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { site } from '@/lib/site';
+import { readResults } from '@/lib/results';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Verify a certificate' };
@@ -9,7 +10,7 @@ export default async function Verify({ params }: { params: { serial: string } })
   const serial = decodeURIComponent(params.serial).toUpperCase();
   const { data: c } = await createAdminClient()
     .from('certificates')
-    .select('serial, student_name, exam_title, score, issued_at, revoked')
+    .select('*')
     .eq('serial', serial)
     .maybeSingle();
 
@@ -37,6 +38,21 @@ export default async function Verify({ params }: { params: { serial: string } })
             <div><dt>Score</dt><dd>{c.score}%</dd></div>
             <div><dt>Issued</dt><dd>{new Date(c.issued_at).toISOString().slice(0, 10)}</dd></div>
           </dl>
+          {readResults(c.results).length > 0 && (
+            <div className="results">
+              <h2>Examination results</h2>
+              <table>
+                <tbody>
+                  {readResults(c.results).map((r) => (
+                    <tr key={r.label} className={r.label === 'Final exam' ? 'final' : undefined}>
+                      <th scope="row">{r.label}</th>
+                      <td>{r.score}%</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
           {!c.revoked && (
             <p style={{ marginTop: 22 }}>
               <a className="btn gold" href={'/certificates/' + c.serial + '/pdf'}>

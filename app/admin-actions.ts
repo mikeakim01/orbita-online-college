@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { site } from '@/lib/site';
+import { STAGES, type StageResult } from '@/lib/results';
 
 type R = { error?: string };
 const str = (f: FormData, k: string) => String(f.get(k) ?? '').trim();
@@ -29,17 +30,35 @@ function parseWhen(v: string): Date | null {
   return d;
 }
 
+/** Reads the five optional exam scores from the form. */
+function parseResults(f: FormData): { results: StageResult[]; error?: string } {
+  const results: StageResult[] = [];
+  for (const s of STAGES) {
+    const raw = str(f, 'r_' + s.key);
+    if (!raw) continue;
+    const n = Number(raw);
+    if (!Number.isFinite(n) || n < 0 || n > 100) return { results, error: s.label + ' score must be between 0 and 100.' };
+    results.push({ label: s.label, score: Math.round(n) });
+  }
+  return { results };
+}
+
 /** Admin only: award a certificate to a student with the completion date and time the admin chooses. */
 export async function grantCertificate(f: FormData): Promise<R> {
   await requireAdmin();
   const userId = str(f, 'user_id');
   const examId = str(f, 'exam_id');
   const title = str(f, 'title').slice(0, 160);
-  const score = Number(str(f, 'score') || '100');
+  const { results, error: rErr } = parseResults(f);
+  if (rErr) return { error: rErr };
+  const finalScore = results.find((r) => r.label === 'Final exam')?.score;
+  const avg = results.length ? Math.round(results.reduce((t, r) => t + r.score, 0) / results.length) : undefined;
+  const rawScore = str(f, 'score');
+  const score = rawScore ? Number(rawScore) : finalScore ?? avg ?? NaN;
   const when = parseWhen(str(f, 'completed'));
   if (!userId || !examId) return { error: 'Choose a student and a course or exam.' };
   if (!when) return { error: 'Enter a valid completion date and time that is not in the future.' };
-  if (!Number.isFinite(score) || score < 0 || score > 100) return { error: 'The score must be between 0 and 100.' };
+  if (!Number.isFinite(score) || score < 0 || score > 100) return { error: rawScore || results.length ? 'The score must be between 0 and 100.' : 'Enter an overall score or at least one exam score.' };
 
   const admin = createAdminClient();
   const [{ data: prof }, { data: exam }, { data: authUser }] = await Promise.all([
@@ -59,8 +78,10 @@ export async function grantCertificate(f: FormData): Promise<R> {
       student_name: name,
       exam_title: title || (exam.title as string),
       score: Math.round(score),
+      ...(results.length ? { results } : {}),
       issued_at: when.toISOString(),
     });
+    if (error && /results/i.test(error.message)) return { error: 'The exam results column is missing. Run supabase/add-exam-results.sql in the Supabase SQL editor once, then try again.' };
     if (!error) {
       revalidatePath('/admin');
       revalidatePath('/admin/certificates');
@@ -71,15 +92,17 @@ export async function grantCertificate(f: FormData): Promise<R> {
   return { error: 'Could not save the certificate. Please try again.' };
 }
 
-/** Admin only: change the completion date and time printed on an existing certificate. */
+/** Admin only: change the completion date and time, and the exam scores, of an existing certificate. */
 export async function updateCertificateDate(f: FormData): Promise<R> {
   await requireAdmin();
   const id = str(f, 'id');
   const when = parseWhen(str(f, 'completed'));
   if (!id) return { error: 'Certificate not found.' };
   if (!when) return { error: 'Enter a valid completion date and time that is not in the future.' };
-  const { error } = await createAdminClient().from('certificates').update({ issued_at: when.toISOString() }).eq('id', id);
-  if (error) return { error: 'Could not change the date.' };
+  const { results, error: rErr } = parseResults(f);
+  if (rErr) return { error: rErr };
+  const { error } = await createAdminClient().from('certificates').update({ issued_at: when.toISOString(), results: results.length ? results : null }).eq('id', id);
+  if (error) return { error: /results/i.test(error.message) ? 'The exam results column is missing. Run supabase/add-exam-results.sql in the Supabase SQL editor once, then try again.' : 'Could not save the changes.' };
   revalidatePath('/admin/certificates');
   revalidatePath('/certificates');
   return {};
