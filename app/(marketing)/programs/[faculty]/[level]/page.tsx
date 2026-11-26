@@ -7,6 +7,7 @@ import PageHeader from '@/components/PageHeader';
 import Reveal from '@/components/Reveal';
 import Scene, { sceneFor } from '@/components/Art';
 import Icon from '@/components/Icon';
+import { curriculum } from '@/lib/curriculum';
 
 type P = { params: { faculty: string; level: string } };
 
@@ -24,6 +25,7 @@ export default function Programme({ params }: P) {
   if (!f || !l) notFound();
   const docs = site.docRules?.[l.name] ?? [];
   const isShort = l.name === 'Certificate';
+  const plan = curriculum(f.slug, l.name);
   const related = courses().filter((c) => c.faculty === f.slug);
   const apply = '/apply?program=' + f.slug + '&level=' + encodeURIComponent(l.name);
   return (
@@ -56,6 +58,18 @@ export default function Programme({ params }: P) {
               <>
                 <h2>Choose your short course</h2>
                 <p>The Certificate level is made up of short courses. Pick one that fits your goals and apply for it directly.</p>
+              </>
+            ) : plan ? (
+              <>
+                <h2>{l.name === 'PhD' ? 'Research timeline' : l.name === 'Bachelor' ? 'What you will study, year by year' : 'What you will study'}</h2>
+                <div className="curr">
+                  {plan.map((b) => (
+                    <div className="curr-block" key={b.title}>
+                      <h3>{b.title}</h3>
+                      <ul>{b.items.map((m) => <li key={m}>{m}</li>)}</ul>
+                    </div>
+                  ))}
+                </div>
               </>
             ) : (
               <>

@@ -762,3 +762,9 @@ html { scroll-behavior: smooth; scroll-padding-top: calc(var(--nav-h) + 12px); }
 .results th, .results td { padding: 10px 12px; border-bottom: 1px solid var(--line); text-align: left; font-weight: 500; }
 .results td { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; }
 .results tr.final th, .results tr.final td { color: var(--gold); font-weight: 800; border-bottom: 0; }
+
+/* Curriculum blocks */
+.curr { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin: 6px 0 28px; }
+.curr-block { border: 1px solid var(--line); border-radius: var(--r); padding: 18px 20px; background: var(--panel); }
+.curr-block h3 { margin: 0 0 10px; font-size: 15px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--gold); }
+.curr-block ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; font-size: 15px; }
