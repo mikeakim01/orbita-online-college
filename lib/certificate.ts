@@ -111,6 +111,26 @@ function wave(page: PDFPage, x0: number, y0: number, x1: number, y1: number, amp
   page.drawSvgPath(d, { x: 0, y: 0, borderColor: hex(color), borderWidth: width, borderOpacity: opacity });
 }
 
+
+// Hypotrochoid rosette (guilloche), centred at cx,cy, outer radius ~ rad.
+function rosette(page: PDFPage, cx: number, cy: number, R: number, r: number, dd: number, rad: number, color: string, width: number, opacity: number) {
+  const k = (R - r) / r;
+  const sc = rad / (R - r + dd);
+  const turns = r / gcd(R, r);
+  let d = '';
+  const N = 1800 * turns;
+  for (let i = 0; i <= N; i++) {
+    const t = (2 * Math.PI * turns * i) / N;
+    const x = cx + sc * ((R - r) * Math.cos(t) + dd * Math.cos(k * t));
+    const y = cy + sc * ((R - r) * Math.sin(t) - dd * Math.sin(k * t));
+    d += (i === 0 ? 'M' : 'L') + x.toFixed(2) + ',' + (-y).toFixed(2) + ' ';
+  }
+  page.drawSvgPath(d + 'Z', { x: 0, y: 0, borderColor: hex(color), borderWidth: width, borderOpacity: opacity });
+}
+function gcd(a: number, b: number): number {
+  return b ? gcd(b, a % b) : a;
+}
+
 export async function buildCertificate(c: CertificateData, brand: Brand = siteBrand, opts: { sample?: boolean } = {}): Promise<Uint8Array> {
   const pdf = await PDFDocument.create();
   pdf.registerFontkit(fontkit);
@@ -129,8 +149,15 @@ export async function buildCertificate(c: CertificateData, brand: Brand = siteBr
 
   page.drawRectangle({ x: 0, y: 0, width: W, height: H, color: hex(PAPER) });
 
-  // ---- Watermark: large emblem with fine rings ----
+  // ---- Security background: fine line tint and guilloche rosettes ----
+  for (let yy = 46; yy < H - 46; yy += 2.6) {
+    page.drawLine({ start: { x: 46, y: yy }, end: { x: W - 46, y: yy }, thickness: 0.25, color: hex(BLUE), opacity: 0.045 });
+  }
   const wy = H / 2 - 6;
+  rosette(page, cx, wy, 17, 5, 4.2, 215, BLUE, 0.35, 0.16);
+  rosette(page, cx, wy, 13, 4, 3.4, 170, gold, 0.35, 0.22);
+  rosette(page, cx, wy, 19, 7, 5, 120, BLUE, 0.3, 0.14);
+  // ---- Watermark: large emblem with fine rings ----
   page.drawCircle({ x: cx, y: wy, size: 215, borderColor: hex(BLUE), borderWidth: 0.6, borderOpacity: 0.07 });
   page.drawCircle({ x: cx, y: wy, size: 205, borderColor: hex(BLUE), borderWidth: 2.4, borderOpacity: 0.05 });
   page.drawCircle({ x: cx, y: wy, size: 160, borderColor: hex(BLUE), borderWidth: 0.5, borderOpacity: 0.06 });
@@ -162,6 +189,24 @@ export async function buildCertificate(c: CertificateData, brand: Brand = siteBr
     putLogo(px + 21, py + 21, 32);
   }
 
+  // Microtext along the inner frame (readable only under magnification)
+  const micro = ((brand.name.toUpperCase() + ' · ' + c.serial + ' · ').repeat(40));
+  const mt = (x: number, y: number, len: number, rot: number) => {
+    let t = '';
+    let w = 0;
+    for (const ch of micro) {
+      const cw = reg.widthOfTextAtSize(ch, 2.6);
+      if (w + cw > len) break;
+      t += ch;
+      w += cw;
+    }
+    page.drawText(t, { x, y, size: 2.6, font: reg, color: hex(ink), opacity: 0.75, rotate: degrees(rot) });
+  };
+  mt(70, H - 44.2, W - 140, 0);
+  mt(70, 41.2, W - 140, 0);
+  mt(44.4, 70, H - 140, 90);
+  mt(W - 41.4, H - 70, H - 140, -90);
+
   // ---- Text helpers ----
   const center = (text: string, y: number, size: number, font: Font, color = ink, x = cx) => {
     page.drawText(text, { x: x - font.widthOfTextAtSize(text, size) / 2, y, size, font, color: hex(color) });
@@ -191,6 +236,8 @@ export async function buildCertificate(c: CertificateData, brand: Brand = siteBr
   spaced('СЕРТИФИКАТ', H - 172, 36, bold, 7, ink);
   spaced('CERTIFICATE', H - 192, 14, reg, 6, BLUE);
   center('№ ' + c.serial, H - 212, 11, bold, ink);
+  page.drawText('№ ' + c.serial, { x: W - 52, y: H / 2 - 60, size: 11, font: bold, color: hex('#B3261E'), rotate: degrees(90) });
+  page.drawText('№ ' + c.serial, { x: 52 + 8, y: H / 2 + 60, size: 11, font: bold, color: hex('#B3261E'), rotate: degrees(-90) });
 
   // ---- Body (bilingual) ----
   center('Настоящий сертификат подтверждает, что', H - 238, 12, reg);
@@ -201,6 +248,9 @@ export async function buildCertificate(c: CertificateData, brand: Brand = siteBr
   center(c.name, H - 284, nameSize, boldItal);
   page.drawLine({ start: { x: cx - 280, y: H - 292 }, end: { x: cx + 280, y: H - 292 }, thickness: 0.6, color: hex(gold) });
 
+  for (const sx0 of [cx - 280, cx + 280]) {
+    page.drawSvgPath('M' + (sx0 - 4) + ',' + -(H - 292) + ' L' + sx0 + ',' + -(H - 288) + ' L' + (sx0 + 4) + ',' + -(H - 292) + ' L' + sx0 + ',' + -(H - 296) + ' Z', { x: 0, y: 0, color: hex(gold) });
+  }
   center('успешно прошёл(-а) курс обучения и сдал(-а) экзамен по программе', H - 312, 11.5, reg);
   center('has successfully completed the course of study and passed the examination in', H - 325, 10, ital, brand.muted);
 
@@ -209,13 +259,18 @@ export async function buildCertificate(c: CertificateData, brand: Brand = siteBr
   const d = c.issued;
   const cityEn = brand.city.split(',')[0].trim();
   const cityRu = CITY_RU[cityEn] ?? cityEn;
-  center(cityRu + ', ' + d.getUTCDate() + ' ' + MONTHS_RU[d.getUTCMonth()] + ' ' + d.getUTCFullYear() + ' г.', 198, 12, boldItal);
-  center(cityEn + ', ' + d.getUTCDate() + ' ' + MONTHS_EN[d.getUTCMonth()] + ' ' + d.getUTCFullYear(), 185, 10, ital, brand.muted);
+  center(cityRu + ', ' + d.getUTCDate() + ' ' + MONTHS_RU[d.getUTCMonth()] + ' ' + d.getUTCFullYear() + ' г.', 208, 12, boldItal);
+  center(cityEn + ', ' + d.getUTCDate() + ' ' + MONTHS_EN[d.getUTCMonth()] + ' ' + d.getUTCFullYear(), 195, 10, ital, brand.muted);
 
   // ---- Seal (centre bottom) ----
   const sx = cx;
   const sy = 122;
+  for (const dir of [-1, 1]) {
+    const bx = sx + dir * 20;
+    page.drawSvgPath('M' + (bx - 15) + ',' + -(sy - 30) + ' L' + (bx + 15) + ',' + -(sy - 30) + ' L' + (bx + 15 + dir * 14) + ',' + -(sy - 68) + ' L' + (bx + dir * 14) + ',' + -(sy - 60) + ' L' + (bx - 15 + dir * 14) + ',' + -(sy - 68) + ' Z', { x: 0, y: 0, color: hex(ink), borderColor: hex(gold), borderWidth: 0.8 });
+  }
   poly(page, sx, sy, 40, 54, 50, gold);
+  page.drawCircle({ x: sx, y: sy, size: 52, borderColor: hex('#8A6A25'), borderWidth: 0.5 });
   page.drawCircle({ x: sx, y: sy, size: 46, color: hex(ink) });
   page.drawCircle({ x: sx, y: sy, size: 43, borderColor: hex(gold), borderWidth: 0.7 });
   page.drawCircle({ x: sx, y: sy, size: 28, borderColor: hex(gold), borderWidth: 0.7 });
