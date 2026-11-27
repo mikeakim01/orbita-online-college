@@ -2,6 +2,7 @@ import { PDFDocument, rgb, LineCapStyle, degrees, type PDFPage } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
 import QRCode from 'qrcode';
 import { site } from '@/lib/site';
+import { LOGO_PNG, LOGO_ASPECT } from '@/lib/certLogo';
 import { FONT_REG, FONT_BOLD, FONT_ITAL, FONT_BI } from '@/lib/certFonts';
 
 export type CertificateData = {
@@ -120,6 +121,8 @@ export async function buildCertificate(c: CertificateData, brand: Brand = siteBr
   const bold = await pdf.embedFont(b64(FONT_BOLD), { subset: true });
   const ital = await pdf.embedFont(b64(FONT_ITAL), { subset: true });
   const boldItal = await pdf.embedFont(b64(FONT_BI), { subset: true });
+  const logo = await pdf.embedPng(Uint8Array.from(Buffer.from(LOGO_PNG, 'base64')));
+  const putLogo = (x: number, y: number, h: number, opacity = 1) => page.drawImage(logo, { x: x - (h * LOGO_ASPECT) / 2, y: y - h / 2, width: h * LOGO_ASPECT, height: h, opacity });
   const ink = brand.ink;
   const gold = brand.accent;
   const cx = W / 2;
@@ -131,7 +134,7 @@ export async function buildCertificate(c: CertificateData, brand: Brand = siteBr
   page.drawCircle({ x: cx, y: wy, size: 215, borderColor: hex(BLUE), borderWidth: 0.6, borderOpacity: 0.07 });
   page.drawCircle({ x: cx, y: wy, size: 205, borderColor: hex(BLUE), borderWidth: 2.4, borderOpacity: 0.05 });
   page.drawCircle({ x: cx, y: wy, size: 160, borderColor: hex(BLUE), borderWidth: 0.5, borderOpacity: 0.06 });
-  emblem(page, cx, wy, 11, { stroke: BLUE, strokeOp: 0.075, w: 10, eColor: BLUE, eOp: 0.075 });
+  putLogo(cx, wy, 360, 0.06);
 
   // ---- Ornamental border ----
   const mid = 27;
@@ -156,7 +159,7 @@ export async function buildCertificate(c: CertificateData, brand: Brand = siteBr
   for (const [px, py] of [[14, 14], [W - 56, 14], [14, H - 56], [W - 56, H - 56]]) {
     page.drawRectangle({ x: px, y: py, width: 42, height: 42, color: hex(PAPER), borderColor: hex(ink), borderWidth: 1.6 });
     page.drawRectangle({ x: px + 3, y: py + 3, width: 36, height: 36, borderColor: hex(gold), borderWidth: 0.6 });
-    emblem(page, px + 21, py + 21, 0.78, { fill: ink, stroke: gold, w: 0.8, eColor: gold });
+    putLogo(px + 21, py + 21, 32);
   }
 
   // ---- Text helpers ----
@@ -180,7 +183,7 @@ export async function buildCertificate(c: CertificateData, brand: Brand = siteBr
   };
 
   // ---- Header ----
-  emblem(page, cx, H - 78, 1.1, { fill: ink, stroke: gold, w: 1.2, eColor: gold });
+  putLogo(cx, H - 73, 58);
   spaced(brand.name.toUpperCase(), H - 116, 15, bold, 2.2);
   center('Онлайн-институт  ·  Online institute', H - 130, 9.5, ital, brand.muted);
 
@@ -237,7 +240,7 @@ export async function buildCertificate(c: CertificateData, brand: Brand = siteBr
   };
   arc(brand.name.toUpperCase(), 31, true);
   arc(cityRu.toUpperCase() + ' · ' + d.getUTCFullYear(), 37.5, false);
-  emblem(page, sx, sy, 0.78, { stroke: gold, w: 0.9, eColor: gold });
+  putLogo(sx, sy, 38);
 
   // ---- Signatures ----
   const scribble = (name: string, style: number) => {
