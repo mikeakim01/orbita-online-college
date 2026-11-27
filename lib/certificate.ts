@@ -205,8 +205,6 @@ export async function buildCertificate(c: CertificateData, brand: Brand = siteBr
   center('has successfully completed the course of study and passed the examination in', H - 325, 10, ital, brand.muted);
 
   let y = block(c.exam, H - 344, 20, bold, 23, 640);
-  y -= 2;
-  center('с результатом ' + c.score + '%  /  with a score of ' + c.score + ' per cent', y, 11.5, reg, BLUE);
 
   const d = c.issued;
   const cityEn = brand.city.split(',')[0].trim();
@@ -291,10 +289,8 @@ export async function buildCertificate(c: CertificateData, brand: Brand = siteBr
   const qrPng = await QRCode.toBuffer(c.verifyUrl, { margin: 1, width: 240 });
   const qr = await pdf.embedPng(qrPng);
   page.drawImage(qr, { x: 62, y: 50, width: 40, height: 40 });
-  page.drawText('Проверка подлинности / Verify', { x: 108, y: 74, size: 7.5, font: bold, color: hex(brand.muted) });
-  const vu = c.verifyUrl.replace(/^https?:\/\//, '');
-  page.drawText(vu.length > 60 ? vu.slice(0, 60) + '...' : vu, { x: 108, y: 63, size: 7, font: reg, color: hex(brand.muted) });
-  page.drawText('№ ' + c.serial, { x: 108, y: 52, size: 7, font: reg, color: hex(brand.muted) });
+  page.drawText('Проверка подлинности / Verify', { x: 108, y: 72, size: 7.5, font: bold, color: hex(brand.muted) });
+  page.drawText('№ ' + c.serial, { x: 108, y: 60, size: 7, font: reg, color: hex(brand.muted) });
   if (brand.disclaimer) center(brand.disclaimer, 46, 6.5, reg, brand.muted);
 
   if (opts.sample) {
