@@ -1,6 +1,8 @@
-import { PDFDocument, StandardFonts, rgb, type PDFPage } from 'pdf-lib';
+import { PDFDocument, rgb, LineCapStyle, degrees, type PDFPage } from 'pdf-lib';
+import fontkit from '@pdf-lib/fontkit';
 import QRCode from 'qrcode';
 import { site } from '@/lib/site';
+import { FONT_REG, FONT_BOLD, FONT_ITAL, FONT_BI } from '@/lib/certFonts';
 
 export type CertificateData = {
   serial: string;
@@ -35,40 +37,25 @@ export const siteBrand: Brand = {
   registrar: site.registrar,
 };
 
-const PAPER = '#FBF8F1';
+const PAPER = '#FFFEFA';
+const BLUE = '#2F4F9E';
 
 const hex = (h: string) => {
   const n = parseInt(h.replace('#', ''), 16);
   return rgb(((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255);
 };
 
-// The standard PDF fonts only cover Latin-1. Replace anything else.
-const safe = (s: string) => s.replace(/[^\x20-\x7E\xA0-\xFF]/g, '?');
-
-const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-const ORD = ['', 'First', 'Second', 'Third', 'Fourth', 'Fifth', 'Sixth', 'Seventh', 'Eighth', 'Ninth', 'Tenth', 'Eleventh', 'Twelfth', 'Thirteenth', 'Fourteenth', 'Fifteenth', 'Sixteenth', 'Seventeenth', 'Eighteenth', 'Nineteenth'];
-const NUM = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
-const TENS = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
-
-function dayWord(d: number) {
-  if (d < 20) return ORD[d];
-  if (d === 20) return 'Twentieth';
-  if (d === 30) return 'Thirtieth';
-  return (d < 30 ? 'Twenty' : 'Thirty') + '-' + ORD[d % 10];
-}
-function yearWord(y: number) {
-  const r = y - 2000;
-  if (r <= 0) return 'Two Thousand';
-  return 'Two Thousand and ' + (r < 20 ? NUM[r] : TENS[Math.floor(r / 10)] + (r % 10 ? ' ' + NUM[r % 10] : ''));
-}
-const ordinalNum = (d: number) => d + (d % 100 >= 11 && d % 100 <= 13 ? 'th' : ['th', 'st', 'nd', 'rd', 'th', 'th', 'th', 'th', 'th', 'th'][d % 10]);
+const MONTHS_EN = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const MONTHS_RU = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+const TITLE_RU: Record<string, string> = { Rector: 'Ректор', Registrar: 'Регистратор' };
+const CITY_RU: Record<string, string> = { Moscow: 'Москва' };
 
 type Font = Awaited<ReturnType<PDFDocument['embedFont']>>;
 
 function wrap(text: string, font: Font, size: number, maxW: number) {
   const lines: string[] = [];
   let cur = '';
-  for (const w of safe(text).split(' ')) {
+  for (const w of text.split(' ')) {
     const t = cur ? cur + ' ' + w : w;
     if (font.widthOfTextAtSize(t, size) > maxW && cur) {
       lines.push(cur);
@@ -90,25 +77,101 @@ function poly(page: PDFPage, cx: number, cy: number, points: number, r1: number,
   page.drawSvgPath(d + 'Z', { x: 0, y: 0, color: hex(color) });
 }
 
+// The institute emblem (hexagon with an E), drawn in PDF coordinates. k = scale (hexagon is 26 x 30 units).
+function emblem(page: PDFPage, cx: number, cy: number, k: number, o: { fill?: string; fillOp?: number; stroke: string; strokeOp?: number; w?: number; eColor?: string; eOp?: number }) {
+  const P = (px: number, py: number) => (cx + (px - 17) * k).toFixed(2) + ',' + (-(cy - (py - 17) * k)).toFixed(2);
+  const hexPath = 'M' + P(17, 2) + ' L' + P(30, 9.5) + ' L' + P(30, 24.5) + ' L' + P(17, 32) + ' L' + P(4, 24.5) + ' L' + P(4, 9.5) + ' Z';
+  page.drawSvgPath(hexPath, {
+    x: 0,
+    y: 0,
+    ...(o.fill ? { color: hex(o.fill), opacity: o.fillOp ?? 1 } : {}),
+    borderColor: hex(o.stroke),
+    borderWidth: o.w ?? 1.2 * k,
+    borderOpacity: o.strokeOp ?? 1,
+  });
+  const e = 'M' + P(12.5, 11) + ' L' + P(21.5, 11) + ' M' + P(12.5, 17) + ' L' + P(19.5, 17) + ' M' + P(12.5, 23) + ' L' + P(21.5, 23) + ' M' + P(12.5, 11) + ' L' + P(12.5, 23);
+  page.drawSvgPath(e, { x: 0, y: 0, borderColor: hex(o.eColor ?? o.stroke), borderWidth: 2.3 * k, borderOpacity: o.eOp ?? o.strokeOp ?? 1, borderLineCap: LineCapStyle.Round });
+}
+
+// Wavy guilloche line along one side of the border frame.
+function wave(page: PDFPage, x0: number, y0: number, x1: number, y1: number, amp: number, period: number, phase: number, color: string, width: number, opacity: number) {
+  const len = Math.hypot(x1 - x0, y1 - y0);
+  const ux = (x1 - x0) / len;
+  const uy = (y1 - y0) / len;
+  const nx = -uy;
+  const ny = ux;
+  let d = '';
+  for (let t = 0; t <= len; t += 1.5) {
+    const o = amp * Math.sin((2 * Math.PI * t) / period + phase);
+    const x = x0 + ux * t + nx * o;
+    const y = y0 + uy * t + ny * o;
+    d += (t === 0 ? 'M' : 'L') + x.toFixed(2) + ',' + (-y).toFixed(2) + ' ';
+  }
+  page.drawSvgPath(d, { x: 0, y: 0, borderColor: hex(color), borderWidth: width, borderOpacity: opacity });
+}
+
 export async function buildCertificate(c: CertificateData, brand: Brand = siteBrand, opts: { sample?: boolean } = {}): Promise<Uint8Array> {
   const pdf = await PDFDocument.create();
-  const page = pdf.addPage([595.28, 841.89]);
+  pdf.registerFontkit(fontkit);
+  const page = pdf.addPage([841.89, 595.28]);
   const { width: W, height: H } = page.getSize();
-  const reg = await pdf.embedFont(StandardFonts.TimesRoman);
-  const bold = await pdf.embedFont(StandardFonts.TimesRomanBold);
-  const ital = await pdf.embedFont(StandardFonts.TimesRomanItalic);
-  const boldItal = await pdf.embedFont(StandardFonts.TimesRomanBoldItalic);
+  const b64 = (s: string) => Uint8Array.from(Buffer.from(s, 'base64'));
+  const reg = await pdf.embedFont(b64(FONT_REG), { subset: true });
+  const bold = await pdf.embedFont(b64(FONT_BOLD), { subset: true });
+  const ital = await pdf.embedFont(b64(FONT_ITAL), { subset: true });
+  const boldItal = await pdf.embedFont(b64(FONT_BI), { subset: true });
   const ink = brand.ink;
+  const gold = brand.accent;
+  const cx = W / 2;
 
   page.drawRectangle({ x: 0, y: 0, width: W, height: H, color: hex(PAPER) });
-  page.drawRectangle({ x: 20, y: 20, width: W - 40, height: H - 40, borderColor: hex(brand.accent), borderWidth: 0.8 });
 
-  const center = (text: string, y: number, size: number, font: Font, color = ink) => {
-    const t = safe(text);
-    page.drawText(t, { x: (W - font.widthOfTextAtSize(t, size)) / 2, y, size, font, color: hex(color) });
+  // ---- Watermark: large emblem with fine rings ----
+  const wy = H / 2 - 6;
+  page.drawCircle({ x: cx, y: wy, size: 215, borderColor: hex(BLUE), borderWidth: 0.6, borderOpacity: 0.07 });
+  page.drawCircle({ x: cx, y: wy, size: 205, borderColor: hex(BLUE), borderWidth: 2.4, borderOpacity: 0.05 });
+  page.drawCircle({ x: cx, y: wy, size: 160, borderColor: hex(BLUE), borderWidth: 0.5, borderOpacity: 0.06 });
+  emblem(page, cx, wy, 11, { stroke: BLUE, strokeOp: 0.075, w: 10, eColor: BLUE, eOp: 0.075 });
+
+  // ---- Ornamental border ----
+  const mid = 27;
+  const A = 5.5;
+  const sides: [number, number, number, number][] = [
+    [18, H - mid, W - 18, H - mid],
+    [18, mid, W - 18, mid],
+    [mid, 18, mid, H - 18],
+    [W - mid, 18, W - mid, H - 18],
+  ];
+  for (const [x0, y0, x1, y1] of sides) {
+    wave(page, x0, y0, x1, y1, A, 38, 0, BLUE, 0.7, 0.85);
+    wave(page, x0, y0, x1, y1, A, 38, Math.PI, ink, 0.7, 0.85);
+    wave(page, x0, y0, x1, y1, A * 0.55, 19, 0, gold, 0.5, 0.9);
+    wave(page, x0, y0, x1, y1, A * 0.55, 19, Math.PI / 2, BLUE, 0.4, 0.55);
+  }
+  page.drawRectangle({ x: 14, y: 14, width: W - 28, height: H - 28, borderColor: hex(ink), borderWidth: 1.6 });
+  page.drawRectangle({ x: 17, y: 17, width: W - 34, height: H - 34, borderColor: hex(gold), borderWidth: 0.6 });
+  page.drawRectangle({ x: 37, y: 37, width: W - 74, height: H - 74, borderColor: hex(gold), borderWidth: 0.6 });
+  page.drawRectangle({ x: 39.5, y: 39.5, width: W - 79, height: H - 79, borderColor: hex(ink), borderWidth: 1.3 });
+  // corner plates
+  for (const [px, py] of [[14, 14], [W - 56, 14], [14, H - 56], [W - 56, H - 56]]) {
+    page.drawRectangle({ x: px, y: py, width: 42, height: 42, color: hex(PAPER), borderColor: hex(ink), borderWidth: 1.6 });
+    page.drawRectangle({ x: px + 3, y: py + 3, width: 36, height: 36, borderColor: hex(gold), borderWidth: 0.6 });
+    emblem(page, px + 21, py + 21, 0.78, { fill: ink, stroke: gold, w: 0.8, eColor: gold });
+  }
+
+  // ---- Text helpers ----
+  const center = (text: string, y: number, size: number, font: Font, color = ink, x = cx) => {
+    page.drawText(text, { x: x - font.widthOfTextAtSize(text, size) / 2, y, size, font, color: hex(color) });
   };
-  // Draws wrapped, centred lines from y downwards and returns the y of the next free line.
-  const block = (text: string, y: number, size: number, font: Font, lineH: number, maxW = 400, color = ink) => {
+  const spaced = (text: string, y: number, size: number, font: Font, sp: number, color = ink) => {
+    const w = [...text].reduce((a, ch) => a + font.widthOfTextAtSize(ch, size) + sp, -sp);
+    let x = cx - w / 2;
+    for (const ch of text) {
+      page.drawText(ch, { x, y, size, font, color: hex(color) });
+      x += font.widthOfTextAtSize(ch, size) + sp;
+    }
+  };
+  const block = (text: string, y: number, size: number, font: Font, lineH: number, maxW: number, color = ink) => {
     for (const l of wrap(text, font, size, maxW)) {
       center(l, y, size, font, color);
       y -= lineH;
@@ -116,58 +179,67 @@ export async function buildCertificate(c: CertificateData, brand: Brand = siteBr
     return y;
   };
 
-  // Crest: a shield with the college initial.
-  const cx = W / 2;
-  const top = H - 62;
-  const sw = 64;
-  const sh = 78;
-  page.drawSvgPath('M0,0 L' + sw + ',0 L' + sw + ',' + sh * 0.55 + ' C' + sw + ',' + sh * 0.86 + ' ' + sw * 0.66 + ',' + sh * 0.97 + ' ' + sw / 2 + ',' + sh + ' C' + sw * 0.34 + ',' + sh * 0.97 + ' 0,' + sh * 0.86 + ' 0,' + sh * 0.55 + ' Z', {
-    x: cx - sw / 2,
-    y: top,
-    color: hex(brand.accent),
-  });
-  page.drawSvgPath('M0,0 L' + (sw - 10) + ',0 L' + (sw - 10) + ',' + (sh * 0.52) + ' C' + (sw - 10) + ',' + sh * 0.78 + ' ' + (sw - 10) * 0.66 + ',' + sh * 0.88 + ' ' + (sw - 10) / 2 + ',' + (sh - 10) + ' C' + (sw - 10) * 0.34 + ',' + sh * 0.88 + ' 0,' + sh * 0.78 + ' 0,' + sh * 0.52 + ' Z', {
-    x: cx - (sw - 10) / 2,
-    y: top - 5,
-    color: hex(PAPER),
-    opacity: 0.18,
-  });
-  const initial = safe(brand.short.charAt(0).toUpperCase());
-  page.drawText(initial, { x: cx - bold.widthOfTextAtSize(initial, 40) / 2, y: top - 52, size: 40, font: bold, color: hex(PAPER) });
+  // ---- Header ----
+  emblem(page, cx, H - 78, 1.1, { fill: ink, stroke: gold, w: 1.2, eColor: gold });
+  spaced(brand.name.toUpperCase(), H - 116, 15, bold, 2.2);
+  center('Онлайн-институт  ·  Online institute', H - 130, 9.5, ital, brand.muted);
 
-  // Title block
-  center(brand.name.toUpperCase(), H - 190, 20, bold);
-  center('This is to certify that', H - 228, 13, ital);
-  let y = block(c.name, H - 268, 28, boldItal, 34, 440);
-  y -= 6;
-  y = block('having successfully completed the prescribed course of study and passed the proctored examination of the ' + brand.name + ' and was awarded the Certificate of Competence in', y, 13, ital, 22, 410);
-  y -= 8;
-  y = block(c.exam, y, 26, boldItal, 32, 440);
-  y -= 4;
-  center('with a score of ' + c.score + ' per cent', y, 13, ital);
-  y -= 34;
-  center('on', y, 12, ital);
-  y -= 24;
+  // ---- Title ----
+  spaced('СЕРТИФИКАТ', H - 172, 36, bold, 7, ink);
+  spaced('CERTIFICATE', H - 192, 14, reg, 6, BLUE);
+  center('№ ' + c.serial, H - 212, 11, bold, ink);
+
+  // ---- Body (bilingual) ----
+  center('Настоящий сертификат подтверждает, что', H - 238, 12, reg);
+  center('This is to certify that', H - 252, 10.5, ital, brand.muted);
+
+  let nameSize = 28;
+  while (boldItal.widthOfTextAtSize(c.name, nameSize) > 600 && nameSize > 16) nameSize -= 1;
+  center(c.name, H - 284, nameSize, boldItal);
+  page.drawLine({ start: { x: cx - 280, y: H - 292 }, end: { x: cx + 280, y: H - 292 }, thickness: 0.6, color: hex(gold) });
+
+  center('успешно прошёл(-а) курс обучения и сдал(-а) экзамен по программе', H - 312, 11.5, reg);
+  center('has successfully completed the course of study and passed the examination in', H - 325, 10, ital, brand.muted);
+
+  let y = block(c.exam, H - 344, 20, bold, 23, 640);
+  y -= 2;
+  center('с результатом ' + c.score + '%  /  with a score of ' + c.score + ' per cent', y, 11.5, reg, BLUE);
+
   const d = c.issued;
-  center(ordinalNum(d.getUTCDate()) + ' ' + MONTHS[d.getUTCMonth()] + ' ' + d.getUTCFullYear(), y, 15, boldItal);
-  y -= 38;
-  center('Witness our hands at the online convocation held in ' + brand.city.split(',')[0], y, 12, ital);
-  y -= 20;
-  center('on the ' + dayWord(d.getUTCDate()) + ' day of ' + MONTHS[d.getUTCMonth()] + ' ' + yearWord(d.getUTCFullYear()), y, 12, ital);
+  const cityEn = brand.city.split(',')[0].trim();
+  const cityRu = CITY_RU[cityEn] ?? cityEn;
+  center(cityRu + ', ' + d.getUTCDate() + ' ' + MONTHS_RU[d.getUTCMonth()] + ' ' + d.getUTCFullYear() + ' г.', 198, 12, boldItal);
+  center(cityEn + ', ' + d.getUTCDate() + ' ' + MONTHS_EN[d.getUTCMonth()] + ' ' + d.getUTCFullYear(), 185, 10, ital, brand.muted);
 
-  // Wax seal, bottom left
-  const sx = 130;
-  const sy = 178;
-  poly(page, sx, sy, 36, 62, 56, brand.accent);
-  page.drawCircle({ x: sx, y: sy, size: 46, borderColor: hex(PAPER), borderWidth: 0.8, opacity: 0, borderOpacity: 0.55 });
-  page.drawCircle({ x: sx, y: sy, size: 40, borderColor: hex(PAPER), borderWidth: 0.5, opacity: 0, borderOpacity: 0.45 });
-  const label = safe(brand.short.toUpperCase());
-  page.drawText(label, { x: sx - bold.widthOfTextAtSize(label, 11) / 2, y: sy + 2, size: 11, font: bold, color: hex(PAPER) });
-  const yr = String(d.getUTCFullYear());
-  page.drawText(yr, { x: sx - reg.widthOfTextAtSize(yr, 8) / 2, y: sy - 11, size: 8, font: reg, color: hex(PAPER) });
+  // ---- Seal (centre bottom) ----
+  const sx = cx;
+  const sy = 122;
+  poly(page, sx, sy, 40, 54, 50, gold);
+  page.drawCircle({ x: sx, y: sy, size: 46, color: hex(ink) });
+  page.drawCircle({ x: sx, y: sy, size: 43, borderColor: hex(gold), borderWidth: 0.7 });
+  page.drawCircle({ x: sx, y: sy, size: 28, borderColor: hex(gold), borderWidth: 0.7 });
+  const arc = (text: string, r: number, top: boolean) => {
+    const size = 6.2;
+    const ws = [...text].map((ch) => bold.widthOfTextAtSize(ch, size));
+    const total = ws.reduce((a, b) => a + b, 0) / r;
+    let th = top ? Math.PI / 2 + total / 2 : (3 * Math.PI) / 2 - total / 2;
+    [...text].forEach((ch, i) => {
+      const half = ws[i] / r / 2;
+      th += top ? -half : half;
+      const px = sx + r * Math.cos(th);
+      const py = sy + r * Math.sin(th);
+      const rot = top ? th - Math.PI / 2 : th + Math.PI / 2;
+      const dx = Math.cos(rot) * (ws[i] / 2);
+      const dy = Math.sin(rot) * (ws[i] / 2);
+      page.drawText(ch, { x: px - dx, y: py - dy, size, font: bold, color: hex(gold), rotate: degrees((rot * 180) / Math.PI) });
+      th += top ? -half : half;
+    });
+  };
+  arc(brand.name.toUpperCase(), 31, true);
+  arc(cityRu.toUpperCase() + ' · ' + d.getUTCFullYear(), 37.5, false);
+  emblem(page, sx, sy, 0.78, { stroke: gold, w: 0.9, eColor: gold });
 
-  // Signatures, bottom right
-  // Handwritten-style signatures: two deliberately different pen styles
+  // ---- Signatures ----
   const scribble = (name: string, style: number) => {
     const s = name.replace(/[^A-Za-z]/g, '');
     let seed = 2166136261;
@@ -202,34 +274,35 @@ export async function buildCertificate(c: CertificateData, brand: Brand = siteBr
     d += ' M' + (x + 34) + ',-18 L' + (x + 36) + ',-17';
     return d;
   };
-  const sig = (name: string, title: string, yy: number, style: number) => {
-    if (name) page.drawSvgPath(scribble(name, style), { x: style === 0 ? 335 : 350, y: yy + (style === 0 ? 22 : 12), borderColor: hex(ink), borderWidth: style === 0 ? 1.5 : 1.1, borderOpacity: 0.92 });
-    page.drawLine({ start: { x: 320, y: yy }, end: { x: 520, y: yy }, thickness: 0.8, color: hex(ink) });
-    const pn = safe(name ? name + ', ' + title : title);
-    page.drawText(pn, { x: 420 - ital.widthOfTextAtSize(pn, 11) / 2, y: yy - 14, size: 11, font: ital, color: hex(brand.muted) });
+  const sig = (name: string, title: string, cxs: number, yy: number, style: number) => {
+    const sw = 190;
+    if (name) page.drawSvgPath(scribble(name, style), { x: cxs - sw / 2 + (style === 0 ? 20 : 40), y: yy + (style === 0 ? 22 : 12), borderColor: hex(ink), borderWidth: style === 0 ? 1.5 : 1.1, borderOpacity: 0.92 });
+    page.drawLine({ start: { x: cxs - sw / 2, y: yy }, end: { x: cxs + sw / 2, y: yy }, thickness: 0.8, color: hex(ink) });
+    if (name) center(name, yy - 13, 11, bold, ink, cxs);
+    center((TITLE_RU[title] ?? title) + '  /  ' + title, yy - (name ? 26 : 13), 9.5, ital, brand.muted, cxs);
   };
-  sig(brand.signatory.name, brand.signatory.title, 214, 0);
-  sig(brand.registrar.name, brand.registrar.title, 150, 1);
+  sig(brand.signatory.name, brand.signatory.title, 215, 112, 0);
+  sig(brand.registrar.name, brand.registrar.title, W - 215, 112, 1);
 
-  // Verification
+  // ---- Verification ----
   const qrPng = await QRCode.toBuffer(c.verifyUrl, { margin: 1, width: 240 });
   const qr = await pdf.embedPng(qrPng);
-  page.drawImage(qr, { x: cx - 26, y: 66, width: 52, height: 52 });
-  center('Certificate ID ' + c.serial, 54, 8.5, reg, brand.muted);
-  const vu = safe(c.verifyUrl.replace(/^https?:\/\//, ''));
-  center('Verify at ' + (vu.length > 70 ? vu.slice(0, 70) + '...' : vu), 43, 8, reg, brand.muted);
-  if (brand.disclaimer) center(brand.disclaimer, 30, 7, reg, brand.muted);
+  page.drawImage(qr, { x: 62, y: 50, width: 40, height: 40 });
+  page.drawText('Проверка подлинности / Verify', { x: 108, y: 74, size: 7.5, font: bold, color: hex(brand.muted) });
+  const vu = c.verifyUrl.replace(/^https?:\/\//, '');
+  page.drawText(vu.length > 60 ? vu.slice(0, 60) + '...' : vu, { x: 108, y: 63, size: 7, font: reg, color: hex(brand.muted) });
+  page.drawText('№ ' + c.serial, { x: 108, y: 52, size: 7, font: reg, color: hex(brand.muted) });
+  if (brand.disclaimer) center(brand.disclaimer, 46, 6.5, reg, brand.muted);
 
   if (opts.sample) {
-    const t = 'SAMPLE';
-    page.drawText(t, {
-      x: W / 2 - 150,
-      y: H / 2 - 130,
-      size: 130,
+    page.drawText('SAMPLE', {
+      x: W / 2 - 230,
+      y: H / 2 - 150,
+      size: 150,
       font: bold,
-      color: hex(brand.accent),
-      opacity: 0.09,
-      rotate: { type: 'degrees' as const, angle: 40 } as never,
+      color: hex(gold),
+      opacity: 0.1,
+      rotate: degrees(30),
     });
   }
   return pdf.save();
