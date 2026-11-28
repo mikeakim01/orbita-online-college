@@ -107,3 +107,18 @@ export async function updateCertificateDate(f: FormData): Promise<R> {
   revalidatePath('/certificates');
   return {};
 }
+
+/** Saves which certificate design is used for all certificate PDFs. */
+export async function chooseDesign(f: FormData): Promise<void> {
+  await requireAdmin();
+  const id = str(f, 'design');
+  const { isDesign } = await import('@/lib/certStyles');
+  if (!isDesign(id)) redirect('/admin/designs?error=Unknown+design');
+  const { error } = await createAdminClient().from('site_settings').upsert({ key: 'certificate_design', value: id });
+  if (error) {
+    const hint = /site_settings/i.test(error.message) ? 'Run supabase/add-site-settings.sql in the Supabase SQL editor first.' : error.message;
+    redirect('/admin/designs?error=' + encodeURIComponent(hint));
+  }
+  revalidatePath('/admin/designs');
+  redirect('/admin/designs?saved=1');
+}

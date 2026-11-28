@@ -27,6 +27,7 @@ const ADMIN: Item[] = [
   { href: '/admin/programs', label: 'Programs', icon: 'book' },
   { href: '/admin/exams', label: 'Exams', icon: 'file' },
   { href: '/admin/certificates', label: 'Certificates', icon: 'award' },
+  { href: '/admin/designs', label: 'Certificate designs', icon: 'file' },
 ];
 
 export default function Shell({
